@@ -1,0 +1,459 @@
+---
+title: "Featured topic: TB in prisons"
+author: "Hazim Timimi, Takuya Yamanaka"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Don’t include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Don’t write figure captions
+    fig_caption: FALSE
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: FALSE
+    # Don't include <div> tags around a header and the content found until the next header
+    section_divs: FALSE  
+
+
+# To run this file and store output as html:
+# rmarkdown::render(here::here("report/ft_prisons.rmd"), output_file = "ft_prisons.html", output_dir = here::here("report/local/"))
+---
+
+```{r setup, include=FALSE}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Kill any attempt at using factors, unless we explicitly want them!
+options(stringsAsFactors=FALSE)
+
+
+# Set output options ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ft_prisons")
+save_csv = TRUE
+save_pdf = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+
+# Load output packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(RColorBrewer)
+library(whomap)
+library(gtbreport)
+library(here)
+library(stringr)
+library(jsonlite)
+
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+
+# Get the data sets and computed values/statistics for this chapter ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+source(here('report/ft_prisons_prepare_data.r'))
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+
+
+
+
+# Tuberculosis in prisons
+
+
+<span class="red">**_Draft! Prepared `r Sys.Date()`` _**</span>
+
+## Introduction
+
+People housed in prisons or congregate settings have a high risk of developing tuberculosis (TB) and of having poorer TB treatment outcomes than the general population, making them a vulnerable group in the context of TB. Protecting the human right to health of this group requires a comprehensive response from both the health and justice sectors.
+
+A United Nations (UN) report has estimated that, worldwide in 2019, 11.7 million people were held in prisons (`r ref_lnk("1")`). That number increased by just over 25% between 2000 and 2019 (similar to overall population growth), with considerable variation among UN regions, ranging from a decline of 27% in Europe to an increase of 82% in Oceania (`r ref_lnk("1")`). Most people in prison in 2019 were men, but the number of women and girls in prison grew by 33% between 2000 and 2019, compared with an increase of 25% for men and boys. In about half of the countries for which data were available for 2014&#8211;2019, prisons were operating at more than 100% of their capacity. 
+
+People in prisons bear a much greater burden of ill health &#8211; both physical and mental &#8211; than people outside prisons. The UN commitment to "leave no one behind" recognizes prisoners as a particularly vulnerable and marginalized group that is subject to discrimination and exclusion (`r ref_lnk("2")`), with a higher risk of conditions such as TB, HIV, hepatitis C, sexually transmitted infections, mental health conditions and substance use disorders. People in prisons also have poorer health outcomes when they do experience illness. The reasons for this are complex and rooted in inequalities, inequities and the social determinants of health. 
+
+In many contexts, prisons exacerbate ill health owing to a chronic lack of investment in the justice sector, contraventions of human rights, low prioritization of health and harm reduction services in prisons, and an absence of other justice-based alternatives to incarceration. The physical infrastructure of prisons, the risk of overcrowding and the frequent movement of prisoners can all increase the risk of transmitting airborne diseases such as TB. In addition, the prevalence of other risk factors for TB (e.g. undernutrition, HIV infection, alcohol use disorders and smoking) is often relatively high in prisons. 
+
+<br />
+
+## Estimates of the burden of TB disease in prisons
+
+The burden of TB disease in prison populations is about 10 times higher than in the general population (`r ref_lnk("3")`). Based on the findings of a recent systematic review, globally in 2019, an estimated 125 105 people in prisons fell ill with TB (95% credible interval [CrI]: 93 736&#8211;165 318), about 1% of the global incidence of TB. The incidence rate of TB among prisoners globally was 1148 per 100 000 person years (95% CrI: 860&#8211;1517), ranging from 793 (95% CrI: 430&#8211;1342) in the World Health Organization (WHO) Eastern Mediterranean Region to 2242 (95% CrI: 1515&#8211;3216) in the African Region (`r ref_lnk("4")`). In addition, it was estimated that only 53% (95% CrI: 42&#8211;64) of people with TB in prisons were detected, leaving a large gap of incarcerated people with undiagnosed or unreported TB  (`r ref_lnk("4")`).
+
+<br />
+
+## Number of people diagnosed and notified with TB in prisons
+
+As part of the annual rounds of global TB data collection implemented by WHO, data about the number of people diagnosed with TB and officially reported as a TB case (i.e. case notifications) in prisons are collected from countries and areas in the WHO Region of the Americas (since 2018) and the European Region (since 2014) (`r ref_lnk("5, 6")`). Data on TB treatment outcomes are also collected for countries in the WHO European Region. The regular collection of data for prisons specifically in these regions follows the prioritization of such data collection by the TB teams in the respective WHO regional offices, with findings published in regional reports. 
+
+Data on the number of notified TB cases among prisoners are shown for the WHO Region of the Americas and the European Region in `r lnk("Fig. 1")` and `r lnk("Fig. 2")`. In the WHO European Region, the number of prisoners with TB fell from just under `r format(f1_data$tb_pris[f1_data$year == 2014], big.mark=" ", trim=TRUE)` in 2014 to `r format(f1_data$tb_pris[f1_data$year == report_year-1], big.mark=" ", trim=TRUE)` in `r report_year - 1` (`r lnk("Fig. 1")`). Also, within the WHO European Region, people with TB in prisons are concentrated in certain areas; for example, between 2014&#8211;2018, prisoners accounted for 7% of newly notified TB cases in eastern European and central Asian countries, compared with 1.5% in central and western European countries. In the WHO Region of the Americas, the number of prisoners with TB has declined slightly, from just under `r format(f2_data$tb_pris[f2_data$year == 2018], big.mark=" ", trim=TRUE)` in 2018 to `r format(f2_data$tb_pris[f2_data$year == report_year-1], big.mark=" ", trim=TRUE)` in `r report_year - 1` (`r lnk("Fig. 2")`). 
+
+
+### `r anch("Fig. 1")`<span class="red">Fig. 1</span> Notifications of TB cases among prisoners in the WHO European Region, 2014&#8211;`r report_year - 1`
+
+```{r fig_1, fig.alt="Bar chart showing numbers of TB episodes among prisoners in the WHO European Region each year since 2014"}
+
+f1_plot <- f1_data  |>  
+  
+  ggplot(aes(x=year, y=tb_pris)) +
+  
+  geom_bar(stat="identity", 
+           fill=palette_gtb("EUR"), 
+           width = 0.5) +
+
+  scale_x_continuous(name="",
+                   breaks = 2014:(report_year-1)) +
+
+  scale_y_continuous(name = "Number notified with TB", 
+                     labels = int_spacer,
+                     limits = c(0,16e3)) +
+
+  theme_gtb()
+
+output_ggplot(f1_plot, f1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+ 
+```
+
+<div id="fig_1"></div>
+
+<hr />
+<br />
+
+### `r anch("Fig. 2")`<span class="red">Fig. 2</span> Notifications of TB cases among prisoners in the WHO Region of the Americas, 2018&#8211;`r report_year - 1`
+
+```{r fig_2, fig.alt="Bar chart showing numbers of TB episodes among prisoners each year in the WHO Region of the Americas since 2018"}
+
+f2_plot <- f2_data  |>  
+  
+  ggplot(aes(x=year, y=tb_pris)) +
+  
+  geom_bar(stat="identity", 
+           fill=palette_gtb("AMR"), 
+           width = 0.5) +
+
+  scale_x_continuous(name="",
+                   breaks = 2018:(report_year-1)) +
+
+  scale_y_continuous(name = "Number notified with TB", 
+                     labels = int_spacer,
+                     limits = c(0,21e3)) +
+
+  theme_gtb()
+
+output_ggplot(f2_plot, f2_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+ 
+```
+
+<div id="fig_2"></div>
+
+<hr />
+<br />
+
+In `r report_year - 2`, the treatment success rate for prisoners with TB in the WHO European Region was `r ftb(f3_data$value[f3_data$year == report_year-2 & f3_data$outcome == "Treatment success"])`%. Part of the reason for this low rate was that, for `r ftb(f3_data$value[f3_data$year == report_year-2 & f3_data$outcome == "Not evaluated"])`% of prisoners treated, the outcome was "not evaluated", which is probably mainly due to transfer of people between prisons and the community (`r lnk("Fig. 3")`). In the WHO European Region, the TB treatment success rate among prisoners with new and relapse TB is lower than that for people with drug-susceptible TB in the general population, which was 68% in `r report_year - 2` (<span class="red">Fig. 2.3.8</span> in <span class="red">Section 2.3</span>). The differential in treatment success rates for prisoners and the civilian population was explained by lower treatment success rates among prisoners in eastern European and central Asian countries; in other countries, success rates were similar. 
+
+### `r anch("Fig. 3")`<span class="red">Fig. 3</span> Treatment outcomes for prisoners with TB in the WHO European Region, 2012&#8211;`r report_year - 2`
+
+```{r fig_3, fig.alt="Horizontal bar chart showing treatment outcomes for prisoners with TB in the WHO European Region for each year since 2012"}
+
+f3_plot <- f3_data  |>  
+  
+  ggplot(aes(year,
+             value,
+             fill = factor(outcome,
+                           levels = c("Treatment success",
+                                      "Failure",
+                                      "Died",
+                                      "Lost to follow-up",
+                                      "Not evaluated")))) +
+ 
+  geom_col(position = position_stack(reverse = TRUE)) +
+
+  coord_flip() +
+
+  theme_gtb() +
+
+  scale_fill_manual("", 
+                    values = c("Treatment success" = palette_gtb("succ"),
+                               "Failure" = palette_gtb("fail"),
+                               "Died" = palette_gtb("died"),
+                               "Lost to follow-up" = palette_gtb("ltfu"),
+                               "Not evaluated" = palette_gtb("neval"))) +
+
+  labs(x="Year started on treatment", y="Percentage of cohort") +
+
+  scale_x_continuous(breaks = seq(2012, report_year-2)) +
+
+  geom_text(data=subset(f3_data,
+                        outcome=="Treatment success"),
+            aes(label = round(value, digits = 0)),
+			            position = position_stack(reverse = TRUE),
+            size=3,
+            hjust=1.5,
+            color="white")
+
+output_ggplot(f3_plot, f3_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+ 
+```
+
+<div id="fig_3"></div>
+
+<hr />
+<br />
+
+## Provision of TB prevention and care in prisons
+
+Provision of high-quality health care in prisons, including TB prevention and care, is essential. WHO recommendations on TB &#8211; on prevention, diagnosis, treatment, testing for HIV and comorbidities, treatment support, and infection prevention and control (IPC) &#8211; are relevant to all people with TB, including those in prisons. 
+
+In the prison context, of particular relevance are TB screening; screening for comorbidities such as HIV, substance use disorders and mental health conditions; IPC; ensuring continuity of care upon release or transfer; and psychological support.
+
+WHO recommends that systematic screening for TB disease should be conducted in prisons and penitentiary institutions, among both prisoners and prison staff (`r ref_lnk("7")`). Systematic screening for TB disease is defined as the systematic identification of people at risk for TB disease, in a predetermined target group, by assessing symptoms and using tests, examinations or other procedures that can be applied rapidly. For those who screen positive, the diagnosis needs to be established by at least one diagnostic test and additional clinical assessments. At a minimum, screening in prisons should always include screening when a person enters a facility, followed by annual screening while in prison and screening upon release. Various screening tools are recommended by WHO, including the WHO four-symptom screen and chest radiography. 
+
+In addition, whenever someone in prison is diagnosed with TB, anyone who has been in close contact with them should be investigated (`r ref_lnk("7")`). High-quality TB care should be offered to those diagnosed; also, after release or transfer, people with TB and those who have been in contact with someone with TB should be followed up.
+
+Systematic testing and treatment for TB infection may also be considered for prisoners (`r ref_lnk("8")`). Depending on eligibility, people can then be offered TB preventive treatment, with supportive measures in place through to completion of the treatment (`r ref_lnk("8")`). 
+
+
+## Conclusions
+
+TB in prisons is a priority public health issue, for prisoners, prison staff and the general population. Ending TB globally requires that prisoners are provided with the same standard of TB prevention and care services as those in the community and are not "left behind". Reducing levels of both incarceration and overcrowding in prisons should help to reduce TB transmission in prisons. Political commitment and multisectoral collaboration to improve prison conditions as well as the provision of high-quality health care services in prisons are key components of the 2030 UN Agenda for Sustainable Development (`r ref_lnk("9")`). 
+
+National TB notifications from prisons are available from more than 150 countries (`r ref_lnk("4")`), and ongoing collaboration between ministries of health, national TB programmes and the justice sector should ensure that data on TB screening, prevention and diagnosis in prisons are routinely reported and used. WHO will explore options for expanding the routine collection and reporting of data beyond the WHO Region of the Americas and the European Region, to all WHO regions, to enable global monitoring and reporting of the burden of TB among people in prisons. 
+
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. Unsentenced with prisons overcrowded in half of all countries. Vienna: United Nations Office on Drugs and Crime; 2021 (https://www.unodc.org/documents/data-and-analysis/statistics/DataMatters1_prison.pdf).
+
+2.	United Nations system common position on incarceration. Vienna: United Nations Office on Drugs and Crime; 2021 (https://www.unodc.org/res/justice-and-prison-reform/nelsonmandelarules-GoF/UN_System_Common_Position_on_Incarceration.pdf).
+
+3.	Cords O, Martinez L, Warren JL, O'Marr JM, Walter KS, Cohen T et al. Incidence and prevalence of tuberculosis in incarcerated populations: a systematic review and meta-analysis. Lancet Public Health. 2021;6:e300–e8. doi: https://doi.org/10.1016/S2468-2667(21)00025-6.
+
+4.	Martinez L, Warren JL, Harries A, Croda J, Espinal M, Lopez Olarte R et al. Global, regional, and national estimates of tuberculosis incidence and case detection among incarcerated individuals from 2000 to 2019: a systematic analysis. Lancet Public Health. 2023;8:E511–E9. doi: https://doi.org/10.1016/S2468-2667(23)00097-X.
+
+5.	Dadu A, Ciobanu A, Hovhannesyan A, Alikhanova N, Korotych O, Gurbanova E et al. Tuberculosis notification trends and treatment outcomes in penitentiary and civilian health care sectors in the WHO European Region. Int J Environ Res Public Health. 2021;18:9566. doi: https://doi.org/10.3390/ijerph18189566.
+
+6.	Tuberculosis surveillance and monitoring in Europe 2023 (2021 data). Copenhagen: World Health Organization and the European Centre for Disease Prevention and Control; 2023 (https://iris.who.int/handle/10665/366567).
+
+7.	WHO consolidated guidelines on tuberculosis. Module 2: Screening – systematic screening for tuberculosis disease. Geneva: World Health Organization; 2021 (https://iris.who.int/handle/10665/340255).
+
+8.	WHO consolidated guidelines on tuberculosis. Module 1: Prevention – tuberculosis preventive treatment. Geneva: World Health Organization; 2020 (https://iris.who.int/handle/10665/331170).
+
+9.	Transforming our world: the 2030 agenda for sustainable development. 70th Session. Resolution adopted by the General Assembly; 25 September 2015. New York: United Nations; 2015. (https://digitallibrary.un.org/record/3923923)
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+
+/* JSON data objects for the figures */
+
+var fig_1_data = `r f1_data |> toJSON("rows")`;
+var eur_colour = "`r palette_gtb('eur')`";
+
+var fig_2_data = `r f2_data |> toJSON("rows")`;
+var amr_colour = "`r palette_gtb('amr')`";
+
+var fig_3_data = `r f3_data %>% pivot_wider(names_from = outcome, values_from = value) |>  rename(succ=2, fail=3, died=4, ltfu=5, neval=6) |>  arrange(rev(year)) |>  toJSON("rows")` ;
+
+var succ_colour = "`r palette_gtb('succ')`";
+var fail_colour = "`r palette_gtb('fail')`";
+var died_colour = "`r palette_gtb('died')`";
+var ltfu_colour = "`r palette_gtb('ltfu')`";
+var neval_colour = "`r palette_gtb('neval')`";
+
+</script>
+
+
+```{js, echo=FALSE}
+
+/* Functions to create the figures */
+
+
+function createFig_1_2(fig_ID, fig_data, reg_colour) {
+        $(fig_ID).kendoChart({
+            dataSource: {
+                data: fig_data
+            },
+            legend: {
+              // hide the legend
+              visible: false
+            },
+            seriesDefaults: {
+                type: "column",
+                gap: 0.2,
+                tooltip: {
+                    visible: true,
+                    template: "#= category #: #= num_spacer(value)#"
+                }
+            },
+            series: [{
+                name: "Number of TB episodes in prisoners",
+                field: "tb_pris",
+                color: reg_colour
+                }],
+            valueAxis: {
+                labels: {
+                    template: "#= num_spacer(value) #"
+                },
+                title: {
+                    text: "Number notified with TB"
+                },
+                line: {
+                    visible: false
+                },
+                min: 0
+
+            },
+            categoryAxis: {
+                field: "year",
+                labels: {
+                    rotation: "auto"
+                },
+                majorGridLines: {
+                    visible: false
+                }
+            }
+        });
+}
+
+
+function createFig_3() {
+      
+		$("#fig_3").kendoChart({
+			dataSource: fig_3_data,
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "bar",
+        stack: {
+          type: "100%"
+        },
+        gap: 0.2
+			},
+			series: [{
+        name: "Treatment success",
+				field: "succ",
+				color: succ_colour,
+        tooltip: {
+				visible: true,
+				template: "Treatment success (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Failure",
+				field: "fail",
+				color: fail_colour,
+        tooltip: {
+				visible: true,
+				template: "Failure (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Died",
+				field: "died",
+				color: died_colour,
+        tooltip: {
+				visible: true,
+				template: "Died (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Lost to follow-up",
+				field: "ltfu",
+				color: ltfu_colour,
+        tooltip: {
+				visible: true,
+				template: "Lost to follow-up (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Not evaluated",
+				field: "neval",
+				color: neval_colour,
+        tooltip: {
+				visible: true,
+				template: "Not evaluated (#= category #): #= value.toPrecision(2) #%"
+			}
+			},
+              ],
+			valueAxis: {
+				title: {
+					text: "Percent of cohort"
+				},
+				line: {
+					visible: false
+				},
+        min: 0,
+        max: 1
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				}			}
+		});
+}
+
+
+
+
+
+
+```
+
+
+```{js, echo=FALSE}
+
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function() {
+  
+  createFig_1_2("#fig_1", fig_1_data, eur_colour);
+  createFig_1_2("#fig_2", fig_2_data, amr_colour);
+
+  createFig_3();
+
+});
+
+```
+
+
+

@@ -1,0 +1,1655 @@
+---
+title: "Section 2.3 TB treatment: coverage & outcomes"
+author: "Takuya Yamanaka"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Do not include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Do not write figure captions
+    fig_caption: FALSE
+    # to save intermediate .png
+    keep_md: true
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: False    
+
+---
+
+
+```{r setup, include=FALSE}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Load output packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(RColorBrewer)
+library(whomap)
+library(gtbreport)
+library(kableExtra)
+library(here)
+library(cowplot)
+library(readr)
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+# Get the data sets and computed values/statistics for section 2.1 ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+source(here('report/ch2-3_prepare_data.r'))
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ch2.3")
+save_csv = TRUE
+save_pdf = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+```
+
+
+```{css, echo=FALSE}
+
+/* Deaths averted table */
+/* Recreating simple striped bootstrap table */
+#deaths_averted_table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  /* Next two lines to allow horizontal scrolling on narrow screens */
+  display: block;
+  overflow-x: auto;
+}
+
+#deaths_averted_table th {
+  border-bottom: 2px solid #DDDDDD;
+  padding: 8px;
+}
+
+#deaths_averted_table td {
+  border-top: 1px solid #DDDDDD;
+  padding: 8px;
+}
+
+/* light gray for odd rows */
+#deaths_averted_table tr:nth-child(odd) td {
+  background-color: #F5F5F5;	
+}
+
+/* Bold for the final row with thick line above */
+#deaths_averted_table tr:last-child td {
+  border-top: 2px solid #DDDDDD;
+  font-weight:bold;	
+}
+
+/* light gray when hovering over a row */
+#deaths_averted_table tr:hover td {
+  background-color: #DDDDDD;
+}
+
+/* Centre-align all column headings except for the first */
+#deaths_averted_table th:not(:first-child) {
+  text-align: center !important;
+}
+
+/* prevent numbers from wrapping in any of the columns */
+#deaths_averted_table td {
+  white-space: nowrap;
+}
+
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+# 2.3 TB treatment: coverage and outcomes    
+
+<span class="red">**Draft! Prepared `r Sys.Date()` using country-reported data snapshot files from `r format(as.Date(snapshot_date), format="%d %B %Y")`!**</span>
+
+To minimize the ill health and mortality caused by TB, everyone who develops TB disease needs to be able to promptly access diagnosis and treatment.
+
+There are still wide gaps between the estimated number of people who develop TB each year (incident cases; see <span class="red">section 1.1</span> for further details) and the number of people newly diagnosed with TB and officially reported as a TB case (`r lnk("Fig. 2.3.1")`). This reflects a mixture of (i) underdiagnosis and (ii) underreporting of people diagnosed with TB to national authorities. Disruptions associated with the COVID-19 pandemic caused a major widening of the global gap in 2020, when the number of people newly diagnosed with TB and officially reported as a case fell by `r round(f2.3.1_txt$pct_dif_2020,0)`%, from `r ftb(f2.3.1_txt$c_newinc_2019/1e6)` million in 2019 to `r ftb(f2.3.1_txt$c_newinc_2020/1e6)` million in 2020 (see section <span class="red">section 2.1</span> for further details). 
+
+Following a major rebound in global notifications of people newly diagnosed with TB in 2021 and 2022, the gap in 2022 narrowed to pre-pandemic levels. However, it is important to highlight that some of the rebound in the number of people newly diagnosed with TB and reported as a "new case" in 2021 and 2022 likely reflects a backlog of people who developed TB in previous years; they were not "incident cases", but rather people whose diagnosis was delayed by COVID-related disruptions.
+
+### `r anch("Fig. 2.3.1")`<span class="red">Fig. 2.3.1</span> Number of people newly diagnosed with TB and officially notified as a TB case (new and relapse cases, all forms) (black) compared with the estimated number of people who developed TB (incident cases) <span style="color:`r gtbreport::palette_gtb("inc")`">(green)</span>, 2010&#8211;`r report_year - 1`, globally and for WHO regions  
+<div class="subhead">The shaded area represents the 95% uncertainty interval.</div>  
+
+```{r fig_2.3.1, fig.alt="Panel plot of incidence estimates compared to notifications by WHO region and globally since 2000",fig.height=6,  eval=show_estimates}
+
+f2.3.1a_plot <- f2.3.1_data %>% 
+  
+  filter(entity=="Global") %>%
+  
+  ggplot(aes(x=year, y=c_newinc, ymin=0)) +
+  
+  geom_line(size=1) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=e_inc_num_lo, 
+                  ymax=e_inc_num_hi),
+              fill=gtbreport::palette_gtb("inc"),
+              alpha=0.4) +
+  
+  geom_line(aes(year, e_inc_num),
+            size=1,
+            colour=gtbreport::palette_gtb("inc")) +
+
+  facet_wrap( ~ entity, ncol = 4, scales="free_y") +
+  
+  scale_x_continuous(name="Year",
+                     breaks = c(2010, 2015, 2015, 2020, report_year-1)) +
+
+  # display y-axis scale in millions
+  scale_y_continuous(name = "Millions per year", 
+                     # Use the remainder operator in the labeller function to make sure we don't get weird effects
+                     # when plotting small numbers
+                     labels = function(i){ifelse((i/1e6) %% 1 == 0, round(i/1e6), round(i/1e6, 1))}) +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+  
+f2.3.1b_plot <- f2.3.1_data %>% 
+    
+  filter(entity!="Global") %>%
+
+  ggplot(aes(x=year, y=c_newinc, ymin=0)) +
+  
+  geom_line(size=1) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=e_inc_num_lo, 
+                  ymax=e_inc_num_hi),
+              fill=gtbreport::palette_gtb("inc"),
+              alpha=0.4) +
+  
+  geom_line(aes(year, e_inc_num),
+            size=1,
+            colour=gtbreport::palette_gtb("inc")) +
+
+  facet_wrap( ~ entity, ncol = 3, scales="free_y") +
+  
+  scale_x_continuous(name="Year",
+                     breaks = c(2010, 2015, 2015, 2020, report_year-1)) +
+
+  # display y-axis scale in millions
+  scale_y_continuous(name = "Millions per year", 
+                     # Use the remainder operator in the labeller function to make sure we don't get weird effects
+                     # when plotting small numbers
+                     labels = function(i){ifelse((i/1e6) %% 1 == 0, round(i/1e6), round(i/1e6, 1))}) +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+  
+output_ggplot(f2.3.1a_plot, f2.3.1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+output_ggplot(f2.3.1b_plot, f2.3.1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div id="fig_2_3_1_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_3_1_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_1_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_1_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_3_1_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_1_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_1_wpro"></div>
+</div>
+</div>
+
+<hr />
+<br />
+
+TB treatment coverage can be approximated as the number of people newly diagnosed with TB and officially reported as a TB case in a given year (i.e. the black lines in `r lnk("Fig. 2.3.1")`), divided by the estimated number of people who developed TB in the same year (i.e. the green curves in  `r lnk("Fig. 2.3.1")`), expressed as a percentage. 
+
+Globally, there were steady improvements in TB treatment coverage between 2010 and 2019: from `r ftb(f2.3.2_txt$c_cdr_2010)`% in 2010 (95% uncertainty interval [UI]: `r ftb(f2.3.2_txt$c_cdr_lo_2010)`&#8211;`r ftb(f2.3.2_txt$c_cdr_hi_2010)`%) to `r ftb(f2.3.2_txt$c_cdr_2015)`% (95% UI: `r ftb(f2.3.2_txt$c_cdr_lo_2015)`&#8211;`r ftb(f2.3.2_txt$c_cdr_hi_2015)`%) in 2015 and then `r ftb(f2.3.2_txt$c_cdr_2019)`% (95% UI: `r ftb(f2.3.2_txt$c_cdr_lo_2019)`&#8211;`r ftb(f2.3.2_txt$c_cdr_hi_2019)`%) in 2019 (`r lnk("Fig. 2.3.2")`). Disruptions caused by the COVID-19 pandemic then resulted in a sharp reversal of progress in 2020: treatment coverage was only `r ftb(f2.3.2_txt$c_cdr_2020)`% (95% UI: `r ftb(f2.3.2_txt$c_cdr_lo_2020)`&#8211;`r ftb(f2.3.2_txt$c_cdr_hi_2020)`%), back to the level of 2015. Following the rebound in notifications of people newly diagnosed with TB in 2021 and 2022 (`r lnk("Fig. 2.3.2")`), TB treatment coverage at global level appears to have recovered to pre-pandemic levels. However, as already highlighted above, some of this rebound likely reflects a backlog of people who developed TB in previous years (and were thus not "incident" cases): this effect distorts estimates of treatment coverage in 2021 and 2022. 
+
+Trends among the six WHO regions also vary: for example, treatment coverage remained below pre-pandemic levels in the Region of the Americas as well as the European and Western Pacific regions in 2022. Among the six WHO regions in `r report_year-1`, TB treatment coverage was highest in the Region of the Americas (with a best estimate of `r ftb(f2.3.3_txt$c_cdr_AMR)`%) and lowest in the Western Pacific Region (with a best estimate of `r ftb(f2.3.3_txt$c_cdr_WPR)`%). 
+
+### `r anch("Fig. 2.3.2")`<span class="red">Fig. 2.3.2</span> Estimated TB treatment coverage^a^, globally and WHO regions, 2010&#8211;`r report_year-1`
+
+```{r fig_2.3.2, fig.alt="trend of TB treatment coverage regionally and globally, from", eval=show_estimates}
+
+f2.3.2a_plot <- f2.3.2a_data %>% 
+  
+  ggplot(aes(x=year, y=c_cdr, ymin=0, ymax=100)) +
+  
+  geom_line(size=1) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=c_cdr_lo , 
+                  ymax=c_cdr_hi),
+              fill=c("Darkgreen"),
+              alpha=0.4) +
+  
+  geom_line(aes(year, c_cdr),
+            size=1,
+            colour=c("Darkgreen")) +
+
+  scale_x_continuous(name="Year",
+                     breaks = seq(2010, report_year-1, by=2)) +
+
+  # display y-axis scale 
+  scale_y_continuous(name = "Treatment coverage (%)") +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+  
+f2.3.2b_plot <- f2.3.2b_data %>% 
+  
+  ggplot(aes(x=year, y=c_cdr, ymin=0, ymax=100)) +
+  
+  geom_line(size=1) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=c_cdr_lo , 
+                  ymax=c_cdr_hi),
+              fill=c("Darkgreen"),
+              alpha=0.4) +
+  
+  geom_line(aes(year, c_cdr),
+            size=1,
+            colour=c("Darkgreen")) +
+
+  facet_wrap( ~ entity, ncol = 4) +
+  
+  scale_x_continuous(name="Year",
+                     breaks = seq(2010, report_year-1, by=2)) +
+
+  # display y-axis scale 
+  scale_y_continuous(name = "Treatment coverage (%)",
+                     breaks = c(0,25,50,75,100)) +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+  
+output_ggplot(f2.3.2a_plot, f2.3.2a_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+output_ggplot(f2.3.2b_plot, f2.3.2b_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div id="fig_2_3_2_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_3_2_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_2_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_2_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_3_2_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_2_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_3_2_wpro"></div>
+</div>
+</div>
+<div class="footnote">^a^ Notifications of people with a new or relapse episode of TB as a percentage of estimated incident TB cases, in the same year. TB treatment coverage in the European Region in 2022 is underestimated, because at the time the data snapshot for this webpage was taken (`r format(as.Date(snapshot_date), format="%d %B %Y")`), 10 countries had not yet reported notification data for 2022 to WHO. Once data from these countries have been reported, it is anticipated that treatment coverage in 2022 will be similar to the level of 2021.</div>
+
+<hr />
+<br />
+
+Of the 30 high TB burden countries, those with the highest levels (&#8805;80%) of treatment coverage in `r report_year-1` included `r gsub("(Philip)|(Republic)|(Russian)", "the \\1\\2\\3", knitr::combine_words(f2.3.3_txt_list_hi$entity, oxford_comma=FALSE))` (`r lnk("Fig. 2.3.3")`). In Uganda, nationwide efforts to find people with TB through mass community-based screening have been implemented, linked to COVID recovery efforts. This will have identified prevalent cases; the screening and diagnostic algorithm (which relies mainly on Xpert testing) may also lead to some overdiagnosis, since there is a high probability of false-positive Xpert results among people in the general community (`r ref_lnk("1")`). The high estimate for Mozambique may reflect over-diagnosis of TB, with a very low proportion of reported cases diagnosed based on bacteriological confirmation: `r ftb(f2.3.3_txt$bacconf_pct_MOZ)`% in `r report_year-1` (<span class="red">Section 2.2</span>). `r str_to_title(int2word(nrow(f2.3.3_txt_list_lo)))` high TB burden countries had worryingly low levels of treatment coverage in `r report_year-1`, with best estimates of below 50%: `r gsub("(Philip)|(Russian)|(Central)", "the \\1\\2\\3", knitr::combine_words(f2.3.3_txt_list_lo$entity, oxford_comma=FALSE))`.
+
+
+### `r anch("Fig. 2.3.3")`<span class="red">Fig. 2.3.3</span> Estimated TB treatment coverage^a^ in `r report_year-1`, 30 high TB burden countries, WHO regions and globally
+
+```{r fig_2.3.3, fig.alt="Forest plot of TB treatment coverage in 30 countries, regionally and globally", fig.asp=1, eval=show_estimates}
+
+f2.3.3_plot <- f2.3.3_data %>% 
+
+  ggplot(aes(x=entity,
+             y=c_cdr)) +
+  geom_point() +
+  
+  labs(x="",
+       y="Treatment coverage (%)") +
+  
+  geom_pointrange(aes(ymin=c_cdr_lo,
+                      ymax=c_cdr_hi),
+                  size=1,
+                  colour="Darkgreen") +
+  
+  expand_limits(y=0) +
+  coord_flip() +
+  theme_gtb() 
+  
+
+output_ggplot(f2.3.3_plot, f2.3.3_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_3"></div>
+<div class="footnote">^a^ Notifications of people with a new or relapse episode of TB as a percentage of estimated incident TB cases. TB treatment coverage in the European Region is underestimated, because at the time the data snapshot for this webpage was taken (21 July 2023), 10 countries had not yet reported notification data for 2022 to WHO.</div>
+
+
+<hr />
+<br />
+
+Estimated treatment coverage is much lower among children than adults (`r lnk("Fig. 2.3.4")`). Globally in `r report_year-1`, treatment coverage was `r ftb(f2.3.4a_txt$c_cdr)`% (95% UI: `r ftb(f2.3.4a_txt$c_cdr_lo)`&#8211;`r ftb(f2.3.4a_txt$c_cdr_hi)`%) among children aged 0&#8211;14 years (the age groups related to children for which WHO routinely collects data are 0&#8211;4 and 5&#8211;14 years; it is recognized that the second category includes young adolescents). The best estimate for those aged 15 years and above was `r ftb(f2.3.4b_txt$c_cdr)`%.
+
+
+### `r anch("Fig. 2.3.4")`<span class="red">Fig. 2.3.4</span> Estimated TB treatment coverage^a^ among people aged 0&#8211;14 years and people aged &#8805;15 years in `r report_year-1`,^b^ 30 high TB burden countries, WHO regions and globally
+
+```{r fig_2.3.4, fig.alt="Forest plot of TB treatment coverage by 0-14 and 15+ in 30 countries, regionally and globally", fig.dim = c(20, 14), eval=show_estimates}
+
+f2.3.4a_plot <- f2.3.4a_data %>% 
+  
+  ggplot(aes(x=entity,
+             y=c_cdr)) +
+  geom_point() +
+  
+  labs(x="",
+       y="Treatment coverage\u1D9C (%)") +
+  
+  geom_pointrange(aes(ymin=c_cdr_lo,
+                      ymax=c_cdr_hi),
+                  size=1,
+                  colour="dodgerblue2") +
+  labs(title="People aged 0\u201314 years") + 
+  expand_limits(y=1) + scale_y_continuous(trans='log', breaks = c(1,10,100,1000)) +
+  coord_flip() +
+  theme_gtb() 
+
+f2.3.4b_plot <- f2.3.4b_data %>% 
+  
+  ggplot(aes(x=entity,
+             y=c_cdr)) +
+  geom_point() +
+  
+  labs(x="",
+       y="Treatment coverage\u1D9C (%)") +
+  
+  geom_pointrange(aes(ymin=c_cdr_lo,
+                      ymax=c_cdr_hi),
+                  size=1,
+                  colour="goldenrod2") +
+  
+  labs(title="People aged \u226515 years") + 
+  expand_limits(y=1) + 
+  scale_y_continuous(trans='log', breaks = c(1,10,100,1000)) +
+  coord_flip() +
+  theme_gtb() 
+
+aligned_plots <- align_plots(f2.3.4a_plot,align="hv", axis="tblr") 
+f2.3.4_plot <- ggdraw() +
+  draw_plot(f2.3.4a_plot, x=0,   y=0, width=0.5, height=1) +
+  draw_plot(f2.3.4b_plot, x=0.5, y=0, width=0.5, height=1) 
+
+output_ggplot(f2.3.4_plot, f2.3.4a_data, show_static, pdf_csv_folder, save_csv, save_pdf, save_cairo=T)
+
+
+```
+<div class="row">
+<div class="col-md-6">
+<div id="fig_2_3_4a"></div>
+</div>
+<div class="col-md-6">
+<div id="fig_2_3_4b"></div>
+</div>
+</div>
+<div class="footnote">^a^ Notifications of people with a new or relapse episode of TB as a percentage of estimated incident TB cases. TB treatment coverage in the European Region is underestimated, because at the time the data snapshot for this webpage was taken (21 July 2023), 10 countries had not yet reported notification data for 2022 to WHO.
+<br />^b^ The age groups related to children for which WHO routinely collects data are 0&#8211;4 and 5&#8211;14 years; it is recognized that the second category includes young adolescents.
+<br />^c^ Log scale.</div>
+
+<hr />
+<br />
+
+In `r report_year-1`, ten countries accounted for `r ftb(f2.3.5_txt$pct_gap_top_ten)`% of the global gap between the estimated number of people who developed TB (incident TB cases) and the number of people who were diagnosed with TB and officially reported as a TB case (`r lnk("Fig. 2.3.5")`). About 50% of the global gap was accounted for by five countries: India (`r ftb(f2.3.5_txt$pct_gap_IND)`%), Indonesia (`r ftb(f2.3.5_txt$pct_gap_IDN)`%), the Philippines (`r ftb(f2.3.5_txt$pct_gap_PHL)`%), Nigeria (`r ftb(f2.3.5_txt$pct_gap_NGA)`%) and Pakistan (`r ftb(f2.3.5_txt$pct_gap_PAK)`%).
+
+### `r anch("Fig. 2.3.5")`<span class="red">Fig. 2.3.5</span> The ten countries with the largest gaps between notifications of people with a new or relapse episode of TB and the best estimates of TB incidence, `r report_year-1`^a^
+
+```{r fig_2.3.5, fig.alt="Bubble map of difference between notifications and estimated incidence for 10 countries", eval=show_estimates}
+
+# To help find centres of bubbles use
+# filter(whomap:::centroid, id %in% f2.3.2_data$iso3) 
+
+f2.3.5_plot <- f2.3.5_data %>%
+  
+  arrange(iso3) %>%
+  
+  bubblemap(legend.title = "Size of gap",
+            legend.pos = c(0.14, 0.5),
+            bubble.col = "purple",
+            scale.breaks = c(5e4, 2.5e5, 5e5+2e5),
+            scale.limits = c(5e4, 5e5+2e5),
+            scale.labels = c("50 000","250 000","500 000"),
+            water.col = "white") +
+  
+  annotate(geom='text', label='China', x=150, y=38, hjust=0, size=3) +
+  geom_segment(x=104, xend=145, y=37, yend=37) +
+  
+  annotate(geom='text', label='Viet Nam', x=150, y=25, hjust=0, size=3) +
+  geom_segment(x=106, xend=145, y=17, yend=25) +
+  
+  annotate(geom='text', label='Philippines', x=150, y=17, hjust=0, size=3) +
+  geom_segment(x=121, xend=145, y=17, yend=17) +
+  
+  annotate(geom='text', label='Pakistan', x=50, y=0, hjust=0, size=3) +
+  geom_segment(x=70, xend=67, y=30, yend=1) +
+  
+  annotate(geom='text', label='India', x=65, y=-5, hjust=0, size=3) +
+  geom_segment(x=80, xend=78, y=23, yend=-5) +
+  
+  annotate(geom='text', label='Bangladesh', x=150, y=32, hjust=0, size=3) +
+  geom_segment(x=90, xend=145, y=24, yend=31) +
+  
+  annotate(geom='text', label='Myanmar', x=67, y=-10, hjust=0, size=3) +
+  geom_segment(x=97, xend=90, y=21, yend=-8) +
+  
+  annotate(geom='text', label='Indonesia', x=82, y=-15, hjust=0, size=3) +
+  geom_segment(x=114, xend=105, y=0, yend=-12) +
+  
+  annotate(geom='text', label='Nigeria', x=-30, y=0, hjust=0, size=3) +
+  geom_segment(x=8, xend=-5, y=10, yend=0) +
+  
+  annotate(geom='text', label='Democratic\nRepublic\nof the Congo', x=-30, y=-20, hjust=0, size=3) +
+  geom_segment(x=24, xend=0, y=-2, yend=-20) #+
+  
+  # annotate(geom='text', label='South Africa', x=50, y=-30, hjust=0, size=3) +
+  # geom_segment(x=25, xend=45, y=-30, yend=-30)
+  
+
+output_ggplot(f2.3.5_plot, f2.3.5_data, show_static = T, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ The ten countries ranked in order of the size of the gap between notified cases and the best estimates of TB incidence in `r report_year-1` are `r if(show_estimates){gsub("(Democrat)|(Philip)", "the \\1\\2", knitr::combine_words(f2.3.5_data$country, oxford_comma=FALSE))}`.</div>
+
+<hr />
+<br />
+
+Among people living with HIV who develop TB, both TB treatment and antiretroviral treatment (ART) for HIV are necessary to prevent unnecessary deaths from TB and HIV. Since 2019, the global coverage of ART for people newly diagnosed and reported with TB and known to be living with HIV has been maintained at the level of `r ftb(f2.3.6_txt$c_art_notified_2022)`% (`r lnk("Fig. 2.3.6")`). However, when compared with the total estimated number of people living with HIV who developed TB in `r report_year-1` (the red curve), coverage was much lower, at `r ftb(f2.3.6_txt$c_art_estimated_2022)`%, up from `r ftb(f2.3.6_txt$c_art_estimated_2021)`% in `r report_year-2`. This was far below the overall coverage of ART for people living with HIV, which was 76% (UI: 65&#8211;89%) at the end of `r report_year-1` (`r ref_lnk("2")`). The main reason for relatively low coverage remains the big gap between the estimated number of people living with HIV who developed TB in `r report_year-1` and the number of people living with HIV who were reported to have been diagnosed with TB in `r report_year-1`.
+
+
+### `r anch("Fig. 2.3.6")`<span class="red">Fig. 2.3.6</span> Estimated global number of incident cases of TB among people living with HIV<span style="color:`r gtbreport::palette_gtb("inch")`;"> (red)</span> compared with the global number of people notified with a new or relapse episode of TB who were known to be people living with HIV (black) and the global number of TB patients who were started on antiretroviral therapy<span style="color:#277abe;"> (blue)</span>, 2010&#8211;`r report_year-1`  
+<div class="subhead">The shaded area represents the 95% uncertainty interval.</div>
+
+```{r fig_2.3.6, fig.alt="Line and ribbon chart of estimated TB/HIV incidence, number notified and number on antiretroviral therapy", eval=show_estimates}
+
+f2.3.6_plot <- f2.3.6_data %>% 
+
+  ggplot(aes(x=year, y=hivpos, ymin=0)) +
+  geom_line(size=1) +
+  
+  geom_ribbon(aes(x=year, ymin=e_inc_tbhiv_num_lo, ymax=e_inc_tbhiv_num_hi),
+              fill=gtbreport::palette_gtb("inch"),
+              alpha=0.4) +
+  geom_line(aes(year, e_inc_tbhiv_num),
+            size=1,
+            colour=gtbreport::palette_gtb("inch")) +
+
+  geom_line(aes(year, art),
+            size=1,
+            colour="#277abe") +
+
+  scale_x_continuous(name="Year",
+                     breaks = seq(2004, report_year-1, by = 3)) +
+
+  scale_y_continuous(name = "New and relapse cases per year (millions)",
+                     labels = function(i){i/1e6}) +
+  xlab("Year") +
+  
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.3.6_plot, f2.3.6_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_6"></div>
+
+<hr />
+<br />
+
+Among the 30 high TB/HIV burden countries, best estimates of the coverage of ART among people living with HIV who developed TB in `r report_year-1` varied widely, from `r ftb(f2.3.7_txt$c_art_bottom)`% in `r f2.3.7_txt$entity_bottom` to `r ftb(f2.3.7_txt$c_art_top)`% in `r f2.3.7_txt$entity_top`; only `r f2.3.7_txt$over_50` of these 30 countries achieved coverage of at least 50% (`r lnk("Fig. 2.3.7")`).
+
+### `r anch("Fig. 2.3.7")`<span class="red">Fig. 2.3.7</span> Estimated coverage of antiretroviral therapy for people living with HIV who developed TB^a^ in `r report_year-1`, 30 high TB/HIV burden countries, WHO regions and globally
+
+```{r fig_2.3.7, fig.alt="Forest plot of ART treatment coverage for TB/HIV patients in 30 countries, regionally and globally", fig.asp=1, eval=show_estimates}
+
+f2.3.7_plot <- f2.3.7_data %>% 
+
+  ggplot(aes(x=entity,
+             y=c_art)) +
+  geom_point() +
+  
+  labs(x="",
+       y="Treatment coverage (%)") +
+  
+  geom_pointrange(aes(ymin=c_art_lo,
+                      ymax=c_art_hi),
+                  size=1,
+                  colour="#ed6476") +
+  
+  expand_limits(y=0) +
+  coord_flip() +
+  theme_gtb() 
+  
+output_ggplot(f2.3.7_plot, f2.3.7_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_7"></div>
+<div class="footnote">^a^ HIV-positive TB patients on antiretroviral therapy as a percentage of the estimated number of incident TB cases among people living with HIV.</div>
+
+<hr />
+<br />
+
+Globally in `r report_year-2` (the latest annual patient cohort for which data are available), the treatment success rate for people treated for TB with first-line regimens was `r ftb(f2.3.8_txt$tsr_Global)`%, and ranged among WHO regions from `r ftb(f2.3.8_txt$tsr_EUR)`% in the European Region to `r ftb(f2.3.8_txt$tsr_EMR)`% in the Eastern Mediterranean Region (`r lnk("Fig. 2.3.8")`). 
+
+### `r anch("Fig. 2.3.8")`<span class="red">Fig. 2.3.8</span> Treatment outcomes for people diagnosed with a new or relapse episode of TB in `r report_year-2`, WHO regions and globally  
+
+```{r fig_2.3.8, fig.alt="Horizontal bar chart showing TB treatment outcomes for WHO regions and globally"}
+
+f2.3.8_plot <- f2.3.8_data %>% 
+  
+  ggplot(aes(x=entity, 
+             y=value, 
+             fill = factor(outcome,
+                           levels = c("Treatment success",
+                                      "Failure",
+                                      "Died",
+                                      "Lost to follow-up",
+                                      "Not evaluated")))) +
+ 
+  geom_col(position = position_stack(reverse = TRUE)) +
+  coord_flip() +
+
+  theme_gtb() +
+  
+  scale_fill_manual("", 
+                    values = c("Treatment success" = palette_gtb("succ"),
+                               "Failure" = palette_gtb("fail"),
+                               "Died" = palette_gtb("died"),
+                               "Lost to follow-up" = palette_gtb("ltfu"),
+                               "Not evaluated" = palette_gtb("neval"))) +
+  
+  labs(x="", y="Percentage of cohort") +
+
+  geom_text(data=subset(f2.3.8_data, 
+                        outcome=="Treatment success"),
+            aes(label = round(value, digits = 0)),
+            position = position_stack(reverse = TRUE), 
+            size=3,
+            hjust=1.5,
+            color="white")
+
+  
+
+output_ggplot(f2.3.8_plot, f2.3.8_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_8"></div>
+
+<hr />
+<br />
+
+The treatment success rate globally was higher in 2021 than in 2019, and the level in 2020 was the same as in 2019 (`r lnk("Fig. 2.3.9")`). This suggests that the quality of care for those diagnosed with TB and initiated on treatment was sustained despite the many disruptions caused by the COVID-19 pandemic in 2020 and 2021, a major collective achievement of many countries.
+
+Treatment success rate remains lower among people living with HIV, at `r ftb(f2.3.9_txt$hivpos)`% globally in `r report_year-2`, although there have been considerable improvements over time.
+
+### `r anch("Fig. 2.3.9")`<span class="red">Fig. 2.3.9</span> Treatment outcomes for people diagnosed with a new or relapse episode of TB globally 2012&#8211;`r report_year-2` 
+
+```{r fig_2.3.9, fig.alt="Panel of 2 horizontal bar charts showing TB treatment outcomes globally by year since 2012 for TB and TB/HIV", fig.asp=0.6}
+
+f2.3.9_plot <- f2.3.9_data %>%
+  
+  ggplot(aes(year,
+             value,
+             fill = factor(outcome,
+                           levels = c("Treatment success",
+                                      "Failure",
+                                      "Died",
+                                      "Lost to follow-up",
+                                      "Not evaluated")))) +
+ 
+  geom_col(position = position_stack(reverse = TRUE)) +
+
+  facet_wrap( ~ subgroup, nrow = 2) +
+  
+  coord_flip() +
+
+  theme_gtb() +
+
+  scale_fill_manual("", 
+                    values = c("Treatment success" = palette_gtb("succ"),
+                               "Failure" = palette_gtb("fail"),
+                               "Died" = palette_gtb("died"),
+                               "Lost to follow-up" = palette_gtb("ltfu"),
+                               "Not evaluated" = palette_gtb("neval"))) +
+
+  labs(x="Year started on treatment", y="Percentage of cohort") +
+
+  scale_x_continuous(breaks = seq(2012, report_year-2)) +
+
+  geom_text(data=subset(f2.3.9_data,
+                        outcome=="Treatment success"),
+            aes(label = round(value, digits = 0)),
+			            position = position_stack(reverse = TRUE),
+            size=3,
+            hjust=1.5,
+            color="white")
+
+
+
+output_ggplot(f2.3.9_plot, f2.3.9_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_9a"></div>
+<div id="fig_2_3_9b"></div>
+
+<hr />
+<br />
+
+Among WHO regions, the best treatment success rate among people living with HIV was achieved in the African Region, where the burden of HIV-associated TB is highest (`r lnk("Fig. 2.3.10")`).
+
+### `r anch("Fig. 2.3.10")`<span class="red">Fig. 2.3.10</span> Treatment outcomes for people living with HIV who were diagnosed with a new or relapse episode of TB in `r report_year-2`, WHO regions and globally  
+
+```{r fig_2.3.10, fig.alt="Horizontal bar chart showing TB treatment outcomes in HIV-positive cases for WHO regions and globally"}
+
+f2.3.10_plot <- f2.3.10_data %>%
+
+  # Note: plotting code same as 3.4.1 -- build a re-usable function?
+  ggplot(aes(x=entity, 
+             y=value, 
+             fill = factor(outcome,
+                           levels = c("Treatment success",
+                                      "Failure",
+                                      "Died",
+                                      "Lost to follow-up",
+                                      "Not evaluated")))) +
+ 
+  geom_col(position = position_stack(reverse = TRUE)) +
+  coord_flip() +
+
+  theme_gtb() +
+  
+  scale_fill_manual("", 
+                    values = c("Treatment success" = palette_gtb("succ"),
+                               "Failure" = palette_gtb("fail"),
+                               "Died" = palette_gtb("died"),
+                               "Lost to follow-up" = palette_gtb("ltfu"),
+                               "Not evaluated" = palette_gtb("neval"))) +
+  
+  labs(x="", y="Percentage of cohort") +
+
+  geom_text(data=subset(f2.3.10_data, 
+                        outcome=="Treatment success"),
+            aes(label = round(value, digits = 0)),
+            position = position_stack(reverse = TRUE), 
+            size=3,
+            hjust=1.5,
+            color="white")
+
+
+output_ggplot(f2.3.10_plot, f2.3.10_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_10"></div>
+
+<hr />
+<br />
+
+Among   the 49 countries in one of the three global lists of high burden countries (for TB, HIV-associated TB and MDR/RR-TB) being used by WHO in the period 2021&#8211;2025 (<span class="red">Annex 3</span>), `r ftb(f2.3.11_txt2)` countries reported treatment outcome data disaggregated by sex, the treatment success rate in women and girls was `r ftb(f2.3.11_txt$value)`% in `r report_year-2`, slightly higher than (but very similar to) that among men and boys (`r lnk("Fig. 2.3.11")`).
+
+### `r anch("Fig. 2.3.11")`<span class="red">Fig. 2.3.11</span> Treatment outcomes for people diagnosed with a new or relapse episode of TB disaggregated by sex for `r ftb(f2.3.11_txt2)` countries that reported data,^a^ 2019&#8211;`r report_year-2` 
+
+```{r fig_2.3.11, fig.alt="Panel of 2 horizontal bar charts showing TB treatment outcomes globally by year since 2019 by sex", fig.asp=0.4}
+
+f2.3.11_plot <- f2.3.11_data %>%
+  
+  ggplot(aes(year,
+             value,
+             fill = factor(outcome,
+                           levels = c("Treatment success",
+                                      "Failure",
+                                      "Died",
+                                      "Lost to follow-up",
+                                      "Not evaluated")))) +
+ 
+  geom_col(position = position_stack(reverse = TRUE)) +
+
+  facet_wrap( ~ subgroup, nrow = 2) +
+  
+  coord_flip() +
+
+  theme_gtb() +
+
+  scale_fill_manual("", 
+                    values = c("Treatment success" = palette_gtb("succ"),
+                               "Failure" = palette_gtb("fail"),
+                               "Died" = palette_gtb("died"),
+                               "Lost to follow-up" = palette_gtb("ltfu"),
+                               "Not evaluated" = palette_gtb("neval"))) +
+
+  labs(x="Year started on treatment", y="Percentage of cohort") +
+
+  scale_x_continuous(breaks = seq(2019, report_year-2)) +
+
+  geom_text(data=subset(f2.3.11_data,
+                        outcome=="Treatment success"),
+            aes(label = round(value, digits = 0)),
+			            position = position_stack(reverse = TRUE),
+            size=3,
+            hjust=1.5,
+            color="white")
+
+
+
+output_ggplot(f2.3.11_plot, f2.3.11_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_11a"></div>
+<div id="fig_2_3_11b"></div>
+<div class="footnote">^a^ WHO has requested data on treatment outcomes disaggregated by sex from the 49 countries in one of the three lists of high burden countries (for TB, HIV-associated TB and MDR/RR-TB) since the 2021 round of global TB data collection. The countries from which such data are requested may be expanded in future (for example, to include all countries with case-based digital surveillance systems for TB).</div>
+
+<hr />
+<br />
+
+The treatment success rate for people aged 0&#8211;14 years was `r ftb(f2.3.12_txt$tsr_014_Global)`% in `r report_year-2` (`r lnk("Fig. 2.3.12")`). 
+
+### `r anch("Fig. 2.3.12")`<span class="red">Fig. 2.3.12</span> Treatment success rates for people aged 0&#8211;14 years who were diagnosed with a new or relapse episode of TB in `r report_year-2`, WHO regions and globally^a^ 
+
+```{r fig_2.3.12, fig.alt="Horizontal bar chart showing TB treatment success rates in children for WHO regions and globally"}
+
+f2.3.12_plot <- f2.3.12_data %>%
+  
+  ggplot(aes(x = entity, y = c_tsr_014)) +
+
+  geom_bar(stat = "identity", fill = palette_gtb("succ")) +
+
+  coord_flip() +
+
+  theme_gtb() +
+
+  scale_y_continuous(name = "Percentage of cohort",
+                     limits = c(0,100)) +
+
+  labs(x="") +
+
+  geom_text(aes(label = round(c_tsr_014, digits = 0)),
+            position = position_stack(reverse = TRUE), 
+            size=3,
+            hjust=1.5,
+            color="white")
+
+
+output_ggplot(f2.3.12_plot, f2.3.12_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_3_12"></div>
+<div class="footnote">^a^ Data were reported by `r f2.3.12_txt$countries` countries on outcomes for `r int_spacer(f2.3.12_txt$kids_coh)` children aged 0&#8211;14 years, equivalent to `r ftb(f2.3.12_txt$kids_outcome_pct)`% of the `r int_spacer(f2.3.12_txt$kids_notified)` cases among children aged 0&#8211;14 years that were notified in `r report_year-2`.</div> 
+
+<hr />
+<br />
+
+In combination, TB treatment and provision of ART to HIV-positive people diagnosed with TB are estimated to have averted `r ftb(t2.3.1_txt)` million deaths between `r lsaved_year` and `r report_year-1`  (`r lnk("Table 2.3.1")`).
+
+### `r anch("Table 2.3.1")`<span class="red">Table 2.3.1</span> Cumulative number of deaths averted by a) TB treatment as well as b) antiretroviral treatment for people diagnosed with TB who were also living with HIV, `r lsaved_year`&#8211;`r report_year - 1` (in millions), globally and by WHO region
+
+```{r table_2.3.1, eval= TRUE }
+
+# Format numbers for the table
+t2.3.1_data <- t2.3.1_data %>%
+  mutate(across(where(is.numeric), ftb))
+
+# Create a table object using kable
+table_header <- c('WHO region',
+                  'Best estimate',
+                  'Uncertainty interval',
+                  'Best estimate',
+                  'Uncertainty interval',
+                  'Best estimate',
+                  'Uncertainty interval')
+
+knitr::kable(t2.3.1_data,
+             format = "html",
+             col.names = table_header,
+             align = 'lccccc',
+             # Add a table ID so that it can be styled using extra CSS in Sitefinity
+             table.attr = "id='deaths_averted_table'") %>%
+  add_header_above(header = c(" " = 1,
+                              "People without HIV" = 2,
+                              "People with HIV\U1D43" = 2,
+                              "Total" = 2))
+
+
+```
+<div class="footnote">^a^ Deaths from TB among people with HIV are officially classified as deaths caused by HIV/AIDS (with TB as a contributory cause). This is the reason why the estimates make a clear distinction between people with and without HIV.</div> 
+
+<hr />
+<br />
+
+The combination of TB treatment and ART for people living with HIV is estimated to have averted `r ftb(t2.3.1_hiv_txt)` million deaths between 2005, the first year following the release of an interim WHO policy on collaborative TB/HIV activities in 2004 (`r ref_lnk("3")`), and 2022. 
+
+A 4-month regimen composed of isoniazid, rifapentine, moxifloxacin and pyrazinamide (HPMZ) has been recommended by WHO for the treatment of rifampicin-susceptible TB since 2022 (`r ref_lnk("4")`). By the end of `r report_year - 1`, `r int2word(f2.3.13_txt)` countries had started to use the new 4-month HPMZ regimen for this purpose: `r gsub("(Philip)|(Republic)|(Russian)|(United)", "the \\1\\2\\3\\4", knitr::combine_words(f2.3.13_txt_list$country, oxford_comma=FALSE))` (`r lnk("Fig. 2.3.13")`).
+
+### `r anch("Fig. 2.3.13")`<span class="red">Fig. 2.3.13</span> Countries that reported using the new 4-month regimen for treatment of rifampicin-susceptible TB by the end of  `r report_year-1`
+
+```{r fig_2.3.13, fig.alt="World map showing countries using the new 4-month regimen"}
+
+f2.3.13_plot <- f2.3.13_data %>% 
+
+  whomap(colours = palatte_fig2.3.13,
+         legend.title = "Country response",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f2.3.13_plot, f2.3.13_data, show_static = T, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<hr />
+<br />
+
+Further country-specific details about the gap between TB incidence and notifications, estimated levels of TB treatment coverage and treatment outcomes are available in the [Global tuberculosis report app](https://www.who.int/teams/global-tuberculosis-programme/data#app) and [country profiles](https://worldhealthorg.shinyapps.io/tb_profiles/).
+
+Data shown on this webpage are as of `r format(as.Date(snapshot_date), format="%d %B %Y")` (see <span class="red">Annex 2</span> of the main report for more details).
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. National tuberculosis prevalence surveys: what diagnostic algorithms should be used in future? Geneva: World Health Organization; 2023 (https://iris.who.int/handle/10665/367909).
+
+2. Global HIV & AIDS statistics &#8211; fact sheet [website]. Geneva: UNAIDS; 2023 (https://www.unaids.org/en/resources/fact-sheet).
+
+3. Interim policy collaborative TB/HIV activities. Geneva: World Health Organization; 2004 (https://iris.who.int/handle/10665/78705).
+
+4. WHO consolidated guidelines on tuberculosis, Module 4: Treatment &#8211; drug-susceptible tuberculosis treatment. Geneva: World Health Organization; 2022 (https://iris.who.int/handle/10665/353829).
+  
+
+```{r fig28, echo = FALSE, message=FALSE, warning = FALSE, fig.alt="pdf_main report_fig28_global success rate", eval=FALSE}
+# this chunk is for saving .pdf and .csv for graphic design for PDF report - not web pages!
+
+# fig 28
+source(here('report/ch2-4_prepare_data.r')) # to load f2.4.7_data
+
+fig28_data <- rbind.data.frame(f2.3.9_data,f2.4.7_data) %>%
+    # Determine the order of subgroup for plotting
+  mutate(subgroup = factor(subgroup,
+                           levels = c("New and relapse TB cases",
+                                      "New and relapse HIV-positive TB cases",
+                                      "MDR/RR-TB cases"))) %>%
+  filter(subgroup != "New and relapse HIV-positive TB cases", outcome == "Treatment success")
+
+fig28_plot <- fig28_data %>%
+  
+  ggplot(aes(year,
+             value,
+             color = subgroup)) +
+ 
+  geom_line(size = 2) +
+
+  theme_gtb() +
+  
+  theme(legend.direction='vertical') +
+
+  scale_color_manual("", 
+                    values = c("New and relapse TB cases" = "dodgerblue3",
+                               "MDR/RR-TB cases" = "firebrick3"),
+                    labels = c("People newly diagnosed with TB (new and relapse cases)\nand enrolled on first-line treatment", 
+                               "People diagnosed with MDR/RR-TB and enrolled on an MDR/RR-TB treatment regimen")) +
+  
+  ylim(50,100) +
+
+  labs(x="Year started on treatment", y="Treatment success rate (%)") +
+
+  scale_x_continuous(breaks = seq(2012, report_year-2)) 
+
+output_ggplot(fig28_plot, fig28_data, show_static = F, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+
+<script type="text/javascript">
+/* JSON data objects for the figures */
+
+var fig_2_3_1_data = `r f2.3.1_data %>% mutate(e_inc_num = e_inc_num/1e6, e_inc_num_lo = e_inc_num_lo/1e6,e_inc_num_hi = e_inc_num_hi/1e6, c_newinc = c_newinc/1e6) %>% toJSON("rows")`   ;  
+
+var fig_2_3_2a_data = `r f2.3.2a_data %>% select(entity, year, c_cdr, c_cdr_lo, c_cdr_hi) %>% rename(value = c_cdr, lo = c_cdr_lo, hi = c_cdr_hi) %>% toJSON("rows")`   ;  
+
+var fig_2_3_2b_data = `r f2.3.2b_data %>% select(entity, year, c_cdr, c_cdr_lo, c_cdr_hi) %>% rename(value = c_cdr, lo = c_cdr_lo, hi = c_cdr_hi) %>% toJSON("rows")`   ;  
+
+
+var fig_2_3_3_data = `r f2.3.3_data %>% mutate(value = c_cdr, lo = c_cdr_lo, hi = c_cdr_hi) %>% toJSON("rows")`   ;  
+
+var fig_2_3_4a_data = `r f2.3.4a_data %>% toJSON("rows")`   ;  
+var fig_2_3_4b_data = `r f2.3.4b_data %>% toJSON("rows")`   ;  
+
+var fig_2_3_6_data = `r f2.3.6_data %>% toJSON("rows")`   ;  
+
+var fig_2_3_7_data = `r f2.3.7_data %>% mutate(value = c_art, lo = c_art_lo, hi = c_art_hi) %>% toJSON("rows")`   ;  
+
+var fig_2_3_8_data = `r f2.3.8_data %>% pivot_wider(names_from = outcome, values_from = value) %>% rename(succ=2, fail=3, died=4, ltfu=5, neval=6) %>% toJSON("rows")` ;
+
+var fig_2_3_9_data = `r f2.3.9_data %>% pivot_wider(names_from = outcome, values_from = value) %>% rename(succ=3, fail=4, died=5, ltfu=6, neval=7) %>% arrange(rev(year)) %>% toJSON("rows")` ;
+
+var fig_2_3_10_data = `r f2.3.10_data %>% pivot_wider(names_from = outcome, values_from = value) %>% rename(succ=2, fail=3, died=4, ltfu=5, neval=6) %>% toJSON("rows")` ;
+
+var fig_2_3_11_data = `r f2.3.11_data %>% pivot_wider(names_from = outcome, values_from = value) %>% rename(succ=3, fail=4, died=5, ltfu=6, neval=7) %>% arrange(rev(year)) %>% toJSON("rows")` ;
+
+var fig_2_3_12_data = `r f2.3.12_data  %>% toJSON("rows")` ;
+
+</script>
+
+  
+```{js, echo=FALSE}
+
+/* Functions to create the figures */
+
+function createFig_2_3_1(fig_ID, data, filter, fig_height, yaxis_format) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: fig_height
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif"
+			},	
+			legend: {
+				position: "bottom"
+			},
+      series: [{
+				type: "line",
+				field: "e_inc_num",
+				color: "#91A93E",	
+				markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					template: "TB incidence number (#= category #): #= value.toPrecision(3) # million"
+				}
+			},{
+				type: "rangeArea",
+				fromField: "e_inc_num_lo",
+				toField: "e_inc_num_hi",
+				color: "#91A93E",
+				tooltip: {
+					visible: true,
+				template: "95% uncertainty interval of TB incidence number (#= category #): #= value.from.toPrecision(3) #\u2013#= value.to.toPrecision(3) # million"
+				}
+			},{
+				type: "line",
+				field: "c_newinc",
+				color: "black",	
+				markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					template: "TB cases notified (#= category #): #= value.toPrecision(3) # million"
+				}
+			}],
+			valueAxis: {
+				labels: {
+					format: yaxis_format
+				},
+				title: {
+					text: "Millions per year"
+				},
+				line: {
+					visible: false
+				}
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+          step: 2
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year"
+				}
+			}
+
+		});
+}
+
+function createFig_2_3_2(fig_ID, data, filter, height) {
+   
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: height
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif"
+			},	
+			legend: {
+				position: "bottom"
+			},
+      series: [{
+				type: "line",
+				field: "value",
+				color: "green",	
+				markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					template: "Treatment coverage (#= category #): #= value.toPrecision(2) #%"
+				}
+			},{
+				type: "rangeArea",
+				fromField: "lo",
+				toField: "hi",
+				color: "green",
+				tooltip: {
+					visible: true,
+				template: "95% uncertainty interval of treatment coverage (#= category #): #= value.from.toPrecision(2) #\u2013#= value.to.toPrecision(2) #%"
+				}
+			}],
+			valueAxis: {
+				title: {
+					text: "Treatment coverage (%)"
+				},
+				line: {
+					visible: false
+				},
+				min: 0,
+				max: 100
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+          step: 2
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year"
+				}
+			}
+
+		});
+
+}
+
+function createFig_2_3_3(fig_ID, data, color) {
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 900
+			},	
+			legend: {
+				position: "bottom"
+			},
+			series: [{
+        type: "bar",
+				field: 0,
+				opacity: 0
+			}, {
+        type: "line",
+				field: "value",
+        errorLowField: "lo",
+        errorHighField: "hi",
+        errorBars: {color: color, line: { width: 3 }},
+        opacity: 0,
+				color: color,
+        markers: {
+          visible: true,
+          background: color,
+          size: 10
+        },
+        
+			tooltip: {
+				visible: true,
+        background: color,
+				template: "#= category #: #= tb_format_pct(value) #%"
+			}
+			},{
+				type: "rangeArea",
+				fromField: "lo",
+				toField: "hi",
+				opacity: 0,
+        color: color,
+				tooltip: {
+					visible: true,
+          background: color,
+				format: "{0}",
+				template: "95% uncertainty interval (#= category #): #= tb_format_pct(value.from) #\u2013#= tb_format_pct(value.to) #%"
+				}
+			}
+              ],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Treatment coverage (%)"
+				},
+				line: {
+					visible: false
+				},
+        min: 0,
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: true
+				}
+			}
+
+		});
+}
+
+function createFig_2_3_4(fig_ID, data, color, title) {
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 900
+			},	
+			title: {
+				text: title,
+				color: "black",
+				font: "bold 16px  Arial,Helvetica,sans-serif",
+        align: "left"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			series: [{
+        type: "bar",
+				field: 0,
+				opacity: 0
+			}, {
+        type: "line",
+				field: "c_cdr",
+        errorLowField: "c_cdr_lo",
+        errorHighField: "c_cdr_hi",
+        errorBars: {color: color, line: { width: 3 }},
+        opacity: 0,
+				color: color,
+        markers: {
+          visible: true,
+          background: color,
+          size: 10
+        },
+        
+			tooltip: {
+				visible: true,
+        background: color,
+				template: "#= category #: #= tb_format_pct(value) #%"
+			}
+			},{
+				type: "rangeArea",
+				fromField: "c_cdr_lo",
+				toField: "c_cdr_hi",
+				opacity: 0,
+        color: color,
+				tooltip: {
+					visible: true,
+          background: color,
+				format: "{0}",
+				template: "95% uncertainty interval (#= category #): #= tb_format_pct(value.from) #\u2013#= tb_format_pct(value.to) #%"
+				}
+			}
+              ],
+			valueAxis: {
+						type: "log",
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Treatment coverage\u1D9C (%)"
+				},
+				line: {
+					visible: false
+				},
+        min: 1,
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: true
+				}
+			}
+
+		});
+}
+
+function createFig_2_3_6(fig_ID, data) {
+    
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 500
+			},	
+			legend: {
+				position: "bottom"
+			},
+      series: [{
+				type: "line",
+				field: "e_inc_tbhiv_num",
+				color: "#ED1D24",
+        markers: {
+//				visible: false,
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Incident cases of TB among people living with HIV (#= category #): #= tb_format_thou(value) # 000"
+				}
+			},{
+				type: "rangeArea",
+				fromField: "e_inc_tbhiv_num_lo",
+				toField: "e_inc_tbhiv_num_hi",
+				color: "#ED1D24",
+				tooltip: {
+					visible: true,
+				format: "{0}",
+				template: "95% uncertainty interval (#= category #): #= tb_format_thou(value.from) # 000\u2013#= tb_format_thou(value.to) # 000"
+				}
+			},{
+				type: "line",
+				field: "hivpos",
+				color: "black",		
+        markers: {
+//				visible: false,
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Number of people notified with a new or relapse episode of TB who were known to be HIV-positive (#= category #): #= num_spacer(value) #"
+				}
+			},{
+				type: "line",
+				field: "art",
+				color: "#277abe",		
+        markers: {
+//				visible: false,
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Number of TB patients who were started on antiretroviral therapy (#= category #): #= num_spacer(value) #"
+				}
+			},],
+			valueAxis: {
+				labels: {
+          template: "#= axis_spacer(value/1e6) #"
+				},
+				title: {
+					text: "New and relapse cases per year (millions)",
+					visible: true
+				},
+				line: {
+					visible: false
+				}
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto",
+          step: 3
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+					visible: true
+				}
+			}
+
+		});
+}
+
+function createFig_2_3_8(fig_ID, data) {
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 500
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "bar",
+        stack: true,
+        gap: 0.2
+			},
+			series: [{
+        name: "Treatment success",
+				field: "succ",
+				color: "#009E73",
+        tooltip: {
+				visible: true,
+				template: "Treatment success (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Failure",
+				field: "fail",
+				color: "#ED1D24",
+        tooltip: {
+				visible: true,
+				template: "Failure (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Died",
+				field: "died",
+				color: "#F7941E",
+        tooltip: {
+				visible: true,
+				template: "Died (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Lost to follow-up",
+				field: "ltfu",
+				color: "#E5DDB3",
+        tooltip: {
+				visible: true,
+				template: "Lost to follow-up (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Not evaluated",
+				field: "neval",
+				color: "#D1D3D4",
+        tooltip: {
+				visible: true,
+				template: "Not evaluated (#= category #): #= value.toPrecision(2) #%"
+			}
+			},
+              ],
+			valueAxis: {
+
+				title: {
+					text: "Percent of cohort"
+				},
+				line: {
+					visible: false
+				},
+				min: 0,
+        max: 100
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				}			}
+		});
+}
+
+function createFig_2_3_9(fig_ID, data, filter, x_axis_title = True, legend_label = True, height) {
+      
+  	// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.subgroup == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: height
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom",
+        visible: legend_label
+			},
+			seriesDefaults: {
+				type: "bar",
+        stack: true,
+        gap: 0.2
+			},
+			series: [{
+        name: "Treatment success",
+				field: "succ",
+				color: "#009E73",
+        tooltip: {
+				visible: true,
+				template: "Treatment success (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Failure",
+				field: "fail",
+				color: "#ED1D24",
+        tooltip: {
+				visible: true,
+				template: "Failure (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Died",
+				field: "died",
+				color: "#F7941E",
+        tooltip: {
+				visible: true,
+				template: "Died (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Lost to follow-up",
+				field: "ltfu",
+				color: "#E5DDB3",
+        tooltip: {
+				visible: true,
+				template: "Lost to follow-up (#= category #): #= value.toPrecision(2) #%"
+			}
+			},{
+        name: "Not evaluated",
+				field: "neval",
+				color: "#D1D3D4",
+        tooltip: {
+				visible: true,
+				template: "Not evaluated (#= category #): #= value.toPrecision(2) #%"
+			}
+			},
+              ],
+			valueAxis: {
+				title: {
+					text: "Percent of cohort",
+          visible: x_axis_title
+				},
+				line: {
+					visible: false
+				},
+        min: 0,
+        max: 100
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				}			}
+		});
+}
+
+function createFig_2_3_12(fig_ID, data) {
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 500
+			},	
+			legend: {
+				position: "bottom",
+				visible: false,
+			},
+			seriesDefaults: {
+				type: "bar",
+        gap: 0.2
+			},
+			series: [{
+        name: "Treatment success",
+				field: "c_tsr_014",
+				color: "#009E73",
+        tooltip: {
+				visible: true,
+				template: "Treatment success (#= category #): #= value.toPrecision(2) #%"
+			}
+			}
+              ],
+			valueAxis: {
+
+				title: {
+					text: "Percent of cohort"
+				},
+				line: {
+					visible: false
+				},
+				min: 0,
+        max: 100
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				}			}
+		});
+}
+
+```
+
+
+```{js, echo=FALSE}
+
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function () {
+  createFig_2_3_1("#fig_2_3_1_global",fig_2_3_1_data,"Global",500,"{0:n0}",0);
+  createFig_2_3_1("#fig_2_3_1_afro",fig_2_3_1_data,"African Region",250,"{0:n1}",0);
+  createFig_2_3_1("#fig_2_3_1_amro",fig_2_3_1_data,"Region of the Americas",250,"{0:n2}",0);
+  createFig_2_3_1("#fig_2_3_1_searo",fig_2_3_1_data,"South-East Asia Region",250,"{0:n0}",0);
+  createFig_2_3_1("#fig_2_3_1_euro",fig_2_3_1_data,"European Region",250,"{0:n1}",0);
+  createFig_2_3_1("#fig_2_3_1_emro",fig_2_3_1_data,"Eastern Mediterranean Region",250,"{0:n1}",0);
+  createFig_2_3_1("#fig_2_3_1_wpro",fig_2_3_1_data,"Western Pacific Region",250,"{0:n1}",0);
+
+  createFig_2_3_2("#fig_2_3_2_global",fig_2_3_2a_data,"Global",500);
+  createFig_2_3_2("#fig_2_3_2_afro",fig_2_3_2b_data,"African Region",250);
+  createFig_2_3_2("#fig_2_3_2_amro",fig_2_3_2b_data,"Region of the Americas",250);
+  createFig_2_3_2("#fig_2_3_2_searo",fig_2_3_2b_data,"South-East Asia Region",250);
+  createFig_2_3_2("#fig_2_3_2_euro",fig_2_3_2b_data,"European Region",250);
+  createFig_2_3_2("#fig_2_3_2_emro",fig_2_3_2b_data,"Eastern Mediterranean Region",250);
+  createFig_2_3_2("#fig_2_3_2_wpro",fig_2_3_2b_data,"Western Pacific Region",250);
+
+  createFig_2_3_3("#fig_2_3_3",fig_2_3_3_data,"Darkgreen");
+
+  createFig_2_3_4("#fig_2_3_4a",fig_2_3_4a_data,"dodgerblue","People aged 0\u201314 years");
+  createFig_2_3_4("#fig_2_3_4b",fig_2_3_4b_data,"goldenrod","People aged \u226515 years");
+  
+  createFig_2_3_6("#fig_2_3_6",fig_2_3_6_data);
+  
+  createFig_2_3_3("#fig_2_3_7",fig_2_3_7_data,"#ed6476");
+  
+  createFig_2_3_8("#fig_2_3_8",fig_2_3_8_data);
+  createFig_2_3_9("#fig_2_3_9a",fig_2_3_9_data,"New and relapse TB cases",false,false,300);
+  createFig_2_3_9("#fig_2_3_9b",fig_2_3_9_data,"New and relapse HIV-positive TB cases",true,true,370);
+
+  createFig_2_3_8("#fig_2_3_10",fig_2_3_10_data);
+
+  createFig_2_3_9("#fig_2_3_11a",fig_2_3_11_data,"Female",false,false,200);
+  createFig_2_3_9("#fig_2_3_11b",fig_2_3_11_data,"Male",true,true,270);
+  
+  createFig_2_3_12("#fig_2_3_12",fig_2_3_12_data);
+
+ }); 
+ 
+```

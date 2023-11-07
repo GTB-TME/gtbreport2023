@@ -1,0 +1,52 @@
+<script type="text/javascript">
+
+/*
+  Common Javascript numerical formating functions to use with Kendo charts
+*/
+
+function num_spacer(number) {
+  /* Change thousands separator to a non-breaking space as per WHO standard */
+  if (number >= 10 | number===0) {
+    return kendo.toString(number, 'n0').replace(/,/g, '&nbsp;');
+  } else if (number<10 & number>=1) {
+    return kendo.toString(number, 'n1').replace(/,/g, '&nbsp;');
+  } else {
+    return kendo.toString(number, 'n2').replace(/,/g, '&nbsp;');
+  }
+
+}
+
+function axis_spacer(number) {
+  /* Change thousands separator to a space as per WHO standard */
+  if (number >= 10 | number === 0) {
+    return kendo.toString(number, 'n0').replace(/,/g, ' ');
+  } else {
+    return kendo.toString(number, 'n1').replace(/,/g, ' ');
+  }
+}
+
+function rounder(n) {
+  /* Round a number using GTB rounding rules */
+  if (n < 100) {
+    return Number(n.toPrecision(2));
+      } else {
+    return Number(n.toPrecision(3));
+  }
+}
+
+function tb_format_thou(n) {
+  /* format a number as thousands using GTB rounding rules */
+  ntform = rounder(n/1000);
+  return num_spacer(ntform);
+}
+
+function tb_format_pct(n) {
+  /* Show percentages to 2 sig figs if under 100% */
+  if (n < 99.5) {
+    return Number(n.toPrecision(2));
+      } else {
+    return Number(n.toPrecision(3));
+  }
+}
+
+</script>

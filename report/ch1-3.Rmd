@@ -1,0 +1,898 @@
+---
+title: "Section 1.3 Drug resistance"
+author: "Hazim Timimi"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Don’t include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Don’t write figure captions
+    fig_caption: FALSE
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: FALSE
+
+# To run this file and store output as html:
+# rmarkdown::render(here::here("report/ch1-3.rmd"), output_file = "ch1-3.html", output_dir = here::here("report/local/"))   
+---
+
+```{r setup, include=FALSE}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Kill any attempt at using factors, unless we explicitly want them!
+options(stringsAsFactors=FALSE)
+
+
+# Set output options ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# Show static chart in addition to Kendo chart?
+show_static = FALSE
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ch1-3")
+save_csv = TRUE
+save_pdf = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+
+# Load output packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+library(ggplot2)
+library(dplyr)
+library(whomap)
+library(gtbreport)
+library(here)
+library(jsonlite)
+library(RColorBrewer)
+
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+# Round RR incidence estimates to 2 sig figs instead of 3
+ftb_rr <- function(x) {
+  
+  return(formatC(signif(x, 2), big.mark=" ", format="d"))
+}
+
+
+# Get the data sets and computed values/statistics for this chapter ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+source(here('report/ch1-3_prepare_data.r'))
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+
+# 1.3 Drug-resistant TB
+
+_Draft! Prepared `r Sys.Date()` using country-reported data snapshot files from `r snapshot_date` and estimates from `r estimates_date`_
+
+
+Since 1994, the World Health Organization (WHO) has systematically collected and analysed data on levels of resistance to anti-TB drugs from countries and areas (`r ref_lnk("1")`). Most attention has been given to the proportion of people diagnosed with TB who have rifampicin-resistant TB (RR-TB) and multidrug-resistant TB (MDR-TB, defined as resistance to both rifampicin and isoniazid), collectively referred to as MDR/RR-TB (for data sources and availability, see `r lnk("Box 1.3.1")`). Since 2022, new methods have been used to produce time series of estimates of the number of people developing MDR/RR-TB each year (incident cases), covering the period from 2015 up to the most recent complete calendar year (`r ref_lnk("2, 3")`). Data on resistance to other anti-TB drugs are collected as well, but the country coverage of such data is much more limited. 
+
+Globally, the estimated annual number of people who developed MDR/RR-TB was relatively stable between 2020 and 2022, after a slow downward trend between 2015 and 2019 (`r lnk("Fig. 1.3.1")`). The estimated number in `r report_year-1` was `r ftb_rr(f1.3_01_txt[2, "e_inc_rr_num"])` (95% uncertainty interval [UI]: `r ftb_rr(f1.3_01_txt[2, "e_inc_rr_num_lo"])`–`r ftb_rr(f1.3_01_txt[2, "e_inc_rr_num_hi"])`). Compared with the time series published in the _Global Tuberculosis Report 2022_ (`r ref_lnk("4")`), there was a downward revision for all years since 2015, for two main reasons: downward revisions to overall estimates of TB incidence (<span class="red">Section 1.1</span>); and revisions to estimates of the proportion of people with TB who had MDR/RR-TB in several countries, most notably Pakistan (details are provided in <span class="red">Annex 5</span> of the main report). 
+
+### `r anch("Fig. 1.3.1")`<span class="red">Fig. 1.3.1</span> Global trend in the estimated number of people who developed MDR/RR-TB (incident cases), 2015&#8211;`r report_year-1`
+<div class="subhead">The shaded area represents the 95% uncertainty interval.</div> 
+
+```{r fig_1.3.01, fig.alt="Line chart of RR-TB incidence estimates globally since 2015"}
+
+f1.3_01_plot <- f1.3_01_data |> 
+  
+  ggplot(aes(x=year, y=e_inc_rr_num, ymin=0)) +
+  
+  geom_line(size=1,
+            colour=gtbreport::palette_gtb("inch")) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=e_inc_rr_num_lo, 
+                  ymax=e_inc_rr_num_hi),
+              fill=gtbreport::palette_gtb("inch"),
+              alpha=0.4) +
+
+  facet_wrap( ~ entity, ncol = 4, scales="free_y") +
+  
+  scale_x_continuous(name="Year",
+                     breaks = c(2015, 2017, 2019, report_year-1)) +
+
+  # display y-axis scale in thousands
+  scale_y_continuous(name = "Thousands per year", 
+                     # Use the remainder operator in the labeller function to make sure we don't get weird effects
+                     # when plotting small numbers
+                     labels = function(i){ifelse((i/1e3) %% 1 == 0, round(i/1e3), round(i/1e3, 1))}) +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f1.3_01_plot, f1.3_01_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_1_3_1"></div>
+
+<br />
+
+Globally, MDR/RR-TB caused an estimated `r ftb_rr(global.mort.rr["m"])` (95% UI: `r ftb_rr(global.mort.rr["m.lo"])`–`r ftb_rr(global.mort.rr["m.hi"])`) deaths in 2022.
+
+The reason why the number of people developing MDR/RR-TB is not estimated to have increased from 2020–2022, in contrast to the number of people developing TB overall (<span class="red">Section 1.1</span>), is that increases in the overall number of people developing TB have been compensated for by an estimated downward trend (since 2015) in the proportion of people with TB who have MDR/RR-TB, particularly among those with a previous history of treatment (`r lnk("Fig. 1.3.2")`). 
+
+
+Globally, the estimated proportion of new TB cases with MDR/RR-TB fell from `r ftb(f1.3_02_txt[1, "best"])`% (95% UI: `r ftb(f1.3_02_txt[1, "lo"])`&ndash;`r ftb(f1.3_02_txt[1, "hi"])`%) in 2015 to `r ftb(f1.3_02_txt[3, "best"])`% (95% UI: `r ftb(f1.3_02_txt[3, "lo"])`&ndash;`r ftb(f1.3_02_txt[3, "hi"])`%) in `r report_year-1`; the estimated proportion of previously treated cases with MDR/RR-TB was `r ftb(f1.3_02_txt[2, "best"])`% (95% UI: `r ftb(f1.3_02_txt[2, "lo"])`&ndash;`r ftb(f1.3_02_txt[2, "hi"])`%) in 2015 and `r ftb(f1.3_02_txt[4, "best"])`% (95% UI: `r ftb(f1.3_02_txt[4, "lo"])`&ndash;`r ftb(f1.3_02_txt[4, "hi"])`%) in `r report_year-1`.
+
+### `r anch("Fig. 1.3.2")`<span class="red">Fig. 1.3.2</span> Global trend in the estimated percentage of people with TB who had MDR/RR-TB, 2015&#8211;`r report_year-1`
+<div class="subhead">The shaded area represents the 95% uncertainty interval.</div> 
+
+```{r fig_1.3.02, fig.alt="Panel plot of estimated RR-TB proportions among new and previously treated patients globally"}
+
+f1.3_02_plot <- f1.3_02_data |> 
+  
+  ggplot(aes(x=year, y=best, ymin=0)) +
+  
+  geom_line(size=1) +
+ 
+  geom_ribbon(aes(x=year, 
+                  ymin=lo, 
+                  ymax=hi),
+              fill=I('blue'),
+              alpha=0.4) +
+
+  scale_x_continuous(name="Year",
+                     breaks = c(2015, 2017, 2019, report_year-1)) +
+  
+  scale_y_continuous(name = "Proportion with MDR/RR-TB",
+                     labels = function(i){paste0(i, "%")}) +
+  
+  facet_wrap( ~ case_type, ncol = 2, scales="free_y") +
+  
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f1.3_02_plot, f1.3_02_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div class="row">
+<div class="col-md-6">
+<div id="fig_1_3_2_new"></div>
+</div>
+<div class="col-md-6">
+<div id="fig_1_3_2_prev"></div>
+</div>
+</div>
+
+<br />
+Trends at regional level vary (`r lnk("Fig. 1.3.3")`). Between 2020 and `r report_year-1`, there were estimated increases in the number of people who developed MDR/RR-TB in two WHO regions (the Americas and South-East Asia), in contrast to continued slow declines in the African, Eastern Mediterranean and Western Pacific regions and declines from 2015–2020 and 2021–2022 in the European Region.
+
+### `r anch("Fig. 1.3.3")`<span class="red">Fig. 1.3.3</span> Regional trends in the estimated number of people who developed  MDR/RR-TB (incident cases), 2015&#8211;`r report_year-1`
+<div class="subhead">The shaded area represents the 95% uncertainty interval.</div> 
+
+```{r fig_1.3.03, fig.alt="Panel plot of estimated number of incident cases of MDR/RR-TB by WHO region since 2015"}
+
+f1.3_03_plot <- f1.3_03_data |> 
+    
+  filter(entity!="Global") |>
+
+  ggplot(aes(x=year, y=e_inc_rr_num, ymin=0)) +
+  
+  geom_line(size=1,
+            colour=gtbreport::palette_gtb("inch")) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=e_inc_rr_num_lo, 
+                  ymax=e_inc_rr_num_hi),
+              fill=gtbreport::palette_gtb("inch"),
+              alpha=0.4) +
+
+  facet_wrap( ~ entity, ncol = 3, scales="free_y") +
+  
+  scale_x_continuous(name="Year",
+                     breaks = c(2015, 2017, 2019, report_year-1)) +
+
+  # display y-axis scale in thousands
+  scale_y_continuous(name = "Thousands per year", 
+                     # Use the remainder operator in the labeller function to make sure we don't get weird effects
+                     # when plotting small numbers
+                     labels = function(i){ifelse((i/1e3) %% 1 == 0, round(i/1e3), round(i/1e3, 1))}) +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+  
+output_ggplot(f1.3_03_plot, f1.3_03_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_3_AFR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_3_AMR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_3_SEAR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_3_EUR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_3_EMR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_3_WPR"></div>
+</div>
+</div>
+
+
+<br />
+Trends in the 30 high MDR/RR-TB burden countries also vary (`r lnk("Fig. 1.3.4")`).
+
+### `r anch("Fig. 1.3.4")`<span class="red">Fig. 1.3.4</span> Country-specific trends in the estimated number of people who developed MDR/RR-TB (incident cases), 30 high MDR/RR-TB burden countries, 2015&#8211;`r report_year - 1`
+<div class="subhead">The shaded area represents the 95% uncertainty interval.</div> 
+
+```{r fig_1.3.04, fig.alt="Panel plot of MDR/RR-TB incidence estimates in the 30 MDR high burden countries since 2015"}
+
+f1.3_04_plot <- f1.3_04_data |> 
+    
+  ggplot(aes(x=year, y=e_inc_rr_num, ymin=0)) +
+  
+  geom_line(size=1,
+            colour=gtbreport::palette_gtb("inch")) +
+  
+  geom_ribbon(aes(x=year, 
+                  ymin=e_inc_rr_num_lo, 
+                  ymax=e_inc_rr_num_hi),
+              fill=gtbreport::palette_gtb("inch"),
+              alpha=0.4) +
+
+  facet_wrap( ~ country, 
+              ncol = 5, 
+              scales="free_y",
+              # Use the labeller function to make sure long country names are wrapped in panel headers
+              labeller = label_wrap_gen(width = 20)) +
+ 
+  
+  scale_x_continuous(name="Year",
+                     breaks = c(2015, 2017, 2019, report_year-1)) +
+
+  # display y-axis scale in thousands
+  scale_y_continuous(name = "Thousands per year", 
+                     # Use the remainder operator in the labeller function to make sure we don't get weird effects
+                     # when plotting small numbers
+                     labels = function(i){ifelse((i/1e3) %% 1 == 0, round(i/1e3), round(i/1e3, 1))}) +
+
+  theme_gtb()  +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+  
+output_ggplot(f1.3_04_plot, f1.3_04_data, show_static, pdf_csv_folder, save_csv, save_pdf, pdf_height = 12)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_AGO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_AZE"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_BGD"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_BLR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_CHN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_PRK"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_COD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_IND"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_IDN"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_KAZ"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_KGZ"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_MNG"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_MOZ"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_MMR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_NPL"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_NGA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_PAK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_PNG"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_PER"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_PHL"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_MDA"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_RUS"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_SOM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_ZAF"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_TJK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_UKR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_UZB"></div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-4">
+<div id="fig_1_3_4_VNM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_ZMB"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_1_3_4_ZWE"></div>
+</div>
+</div>
+
+<br />
+The countries with the largest share of the global number of people estimated to have developed MDR/RR-TB (incident cases) in `r report_year-1` were `r f1.3_05_txt[1,"country"]` (`r ftb(f1.3_05_txt[1,"pct"])`% of global cases), the `r f1.3_05_txt[2,"country"]` (`r ftb(f1.3_05_txt[2,"pct"])`% of global cases) and the `r f1.3_05_txt[3,"country"]` (`r ftb(f1.3_05_txt[3,"pct"])`% of global cases) (`r lnk("Fig. 1.3.5")`). 
+ 
+### `r anch("Fig. 1.3.5")`<span class="red">Fig. 1.3.5</span> Estimated number of people who developed MDR/RR-TB (incident cases) in `r report_year - 1`, for countries with at least 1000 incident cases^a^
+
+
+```{r fig_1.3.05, fig.alt="Bubble map of countries with the highest numbers of MDR/RR-TB cases"}
+
+f1.3_05_plot <- f1.3_05_data |>
+  
+  bubblemap(legend.title = "Number of cases",
+            legend.pos = c(0.14, 0.5),
+            bubble.col = "red",
+            scale.breaks = c(1e3, 1e4, 1e5),
+            scale.limits = c(1e3, 1.5e5),
+            scale.labels = c("1000","10 000","100 000"),
+            water.col = "white") +
+
+  annotate(geom='text', label='Russian Federation', x=120, y=67, hjust=0, size=3) +
+  geom_segment(x=100, xend=115, y=62, yend=67) +  
+  
+  annotate(geom='text', label='China', x=150, y=38, hjust=0, size=3) +
+  geom_segment(x=104, xend=145, y=37, yend=37) +
+
+  annotate(geom='text', label='Philippines', x=150, y=17, hjust=0, size=3) +
+  geom_segment(x=121, xend=145, y=17, yend=17) +
+
+  annotate(geom='text', label='Pakistan', x=50, y=0, hjust=0, size=3) +
+  geom_segment(x=70, xend=70, y=30, yend=5) +
+
+  annotate(geom='text', label='India', x=65, y=-5, hjust=0, size=3) +
+  geom_segment(x=80, xend=80, y=23, yend=-5) +
+
+  annotate(geom='text', label='Indonesia', x=80, y=-15, hjust=0, size=3) +
+  geom_segment(x=114, xend=105, y=0, yend=-12) +
+
+  annotate(geom='text', label='Myanmar', x=67, y=-10, hjust=0, size=3) +
+  geom_segment(x=97, xend=90, y=21, yend=-8) +
+  
+  annotate(geom='text', label='Nigeria', x=-25, y=0, hjust=0, size=3) +
+  geom_segment(x=8, xend=-5, y=10, yend=0)
+  
+output_ggplot(f1.3_05_plot, f1.3_05_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ The `r f1.3_05_top |> nrow() |> int2word()` countries ranked in descending order of their total number of MDR/RR-TB incident cases in `r report_year-1` are `r gsub("(Philip)|(Russian)|(Central)", "the \\1\\2\\3", knitr::combine_words(f1.3_05_top$country, oxford_comma=FALSE))`. 
+</div> 
+<br />
+
+The proportion of people with TB who had MDR/RR-TB varies considerably among regions and countries (`r lnk("Fig. 1.3.6")`, `r lnk("Fig. 1.3.7")`). For people with no previous history of TB treatment (new cases), best estimates range from less than 3% in the WHO African, South-East Asian and Eastern Mediterranean regions to `r ftb(f1.3_06_txt[1, "e_rr_prop_new"]*100)`% in the `r f1.3_06_txt[1, "entity"]`. For people previously treated for TB, best estimates range from `r ftb(f1.3_07_txt[6, "e_rr_prop_ret"]*100)`% in the `r f1.3_07_txt[6, "entity"]` to `r ftb(f1.3_07_txt[1, "e_rr_prop_ret"]*100)`% in the `r f1.3_07_txt[1, "entity"]`. At country level, the highest proportions are found in the Russian Federation and in several countries in eastern Europe and Central Asia.  
+
+
+
+### `r anch("Fig. 1.3.6")`<span class="red">Fig. 1.3.6</span> Percentage of people with TB who had MDR/RR-TB, for those with no previous history of TB treatment, `r report_year - 1`
+
+```{r fig_1.3.06, fig.alt="Map showing percentage of new TB cases with MDR/RR-TB in 2021"}
+
+f1.3_06_plot <- f1.3_06_data |> 
+  whomap(colours=c('#F5EB8C','#FCB56B','#F05552','#F71111','#800F0B'), 
+         na.col='#FFFFFF', 
+         legend.title = "Percentage (%)", 
+         water.col = "white") 
+
+output_ggplot(f1.3_06_plot, f1.3_06_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+### `r anch("Fig. 1.3.7")`<span class="red">Fig. 1.3.7</span> Percentage of people with TB who had MDR/RR-TB, for those previously treated for TB, `r report_year - 1`
+
+```{r fig_1.3.07, fig.alt="Map showing percentage of previously treated TB cases with MDR/RR-TB in 2021"}
+
+f1.3_07_plot <- f1.3_07_data |> 
+  whomap(colours=c('#eff3ff','#bdd7e7','#6baed6','#3182bd','#08519c'), 
+         na.col='#FFFFFF', 
+         legend.title = "Percentage (%)", 
+         water.col = "white") 
+
+output_ggplot(f1.3_07_plot, f1.3_07_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+
+<br />
+
+
+## Other patterns of drug resistance 
+
+There were an estimated `r ftb(HR_global$inc.H/1e6)` million incident cases (95% UI: 
+`r ftb(HR_global$inc.H.lo/1e6)`–`r ftb(HR_global$inc.H.hi/1e6)` million) of isoniazid-resistant TB in `r report_year - 1`, including people with both rifampicin-susceptible and rifampicin-resistant TB. 
+
+Globally in `r report_year-1`, the estimated proportion of MDR/RR-TB cases with pre-XDR (i.e. resistance to any fluoroquinolone for which testing was done) was `r ftb(FQR_in_RR_global$FQR.mid)`% (95% CI: `r ftb(FQR_in_RR_global$FQR.lo)`–`r ftb(FQR_in_RR_global$FQR.hi)`%). 
+
+
+`r anch("Box 1.3.1")`
+
+<div class="textbox">
+
+## Box 1.3.1: Anti-TB drug resistance: data sources and availability 
+
+There are two main sources of data about levels of anti-TB drug resistance: national surveys and continuous surveillance (i.e. routine diagnostic testing for drug resistance among people diagnosed with bacteriologically confirmed TB) (`r ref_lnk("5")`). 
+
+As of August 2023, `r f1.3_08_txt[f1.3_08_txt$var == "Surveillance", "countries"]` countries and areas had representative data about levels of resistance to rifampicin from continuous  surveillance systems, `r f1.3_08_txt[f1.3_08_txt$var == "Survey", "countries"]` had nationally-representative survey data dating from 2000 or later and `r f1.3_08_txt[f1.3_08_txt$var == "Survey & Surveillance", "countries"]` had data from both continuous surveillance and surveys (`r lnk("Fig. 1.3.8")`, `r lnk("Fig. 1.3.9")`, `r lnk("Fig. 1.3.10")`). This total of `r nrow(f1.3_10_data)` countries and areas worldwide collectively accounted for `r ftb(pop_drs_pct$pct)`% of the world’s population and `r ftb(inc_drs_pct$pct)`% of incident cases of TB in 2022. 
+
+Of the `r nrow(hbtb_hbmdr)` countries that are in one or both lists of high TB burden and high MDR/RR-TB burden countries being used by WHO in the period 2021–2025, `r inner_join(f1.3_09_data, hbtb_hbmdr,by="iso3") |> nrow()` had survey or surveillance data on levels of drug resistance.
+
+
+### `r anch("Fig. 1.3.8")`<span class="red">Fig. 1.3.8</span> Sources of data for rifampicin resistance among people diagnosed with TB, for those with no previous history of TB treatment, 2000&#8211;2022
+
+```{r fig_1.3.08, fig.alt="Map showing Source of data for rifampicin resistance among new cases"}
+
+f1.3_08_plot <- f1.3_08_data |> 
+  whomap(colours=brewer.pal(3, "YlGn"), 
+         na.col='#FFFFFF', 
+         water.col = "white") 
+
+output_ggplot(f1.3_08_plot, f1.3_08_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+
+### `r anch("Fig. 1.3.9")`<span class="red">Fig. 1.3.9</span> Most recent year of data on rifampicin resistance for people diagnosed with TB, for those with no previous history of TB treatment, 2000&#8211;2022
+
+```{r fig_1.3.09, fig.alt="Map showing most recent year of data on rifampicin resistance among new cases"}
+
+f1.3_09_plot <- f1.3_09_data |> 
+  whomap(colours=brewer.pal(3, "Blues"), 
+         water.col = "white", 
+         na.col='#FFFFFF', 
+         legend.pos=c(0.14, 0.42)) + 
+  
+  # Add markers for countries where the most recent data is sub-national
+  add_marker(iso3 = f1.3_09_data_subnational$iso3, 
+             lab='Subnational data', 
+             col="black",
+             size=3)
+
+output_ggplot(f1.3_09_plot, f1.3_09_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+
+
+
+### `r anch("Fig. 1.3.10")`<span class="red">Fig. 1.3.10</span> Number of data points on rifampicin resistance among people diagnosed with TB, for those with no previous history of TB treatment, 2000&#8211;2022
+
+```{r fig_1.3.10, fig.alt="Map showing number of data points on rifampicin resistance among new cases"}
+
+f1.3_10_plot <- f1.3_10_data |> 
+  whomap(colours=brewer.pal(6, "Purples"), 
+         na.col='#FFFFFF', 
+         legend.pos=c(0.14, 0.34), 
+         water.col = "white") 
+
+output_ggplot(f1.3_10_plot, f1.3_10_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+</div>
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. Dean AS, Tosas Auguet O, Glaziou P, Zignol M, Ismail N, Kasaeva T _et al_ (2022). 25 years of surveillance of drug-resistant tuberculosis: achievements, challenges, and way forward. Lancet Infect Dis 22(7):E191-E196 (https://doi.org/10.1016/S1473-3099(21)00808-2).
+
+2. WHO Global Task Force on TB Impact Measurement: report of a subgroup meeting on methods used by WHO to estimate TB disease burden, 11-12 May 2022, Geneva, Switzerland. Geneva: World Health Organization; 2022 (https://iris.who.int/handle/10665/363428).
+
+3. Background document 2. Methods for estimating the incidence of drug-resistant TB. In: WHO/Global Task Force on TB Impact measurement [website]. Geneva: World Health Organization; 2022 (https://cdn.who.int/media/docs/default-source/hq-tuberculosis/global-task-force-on-tb-impact-measurement/meetings/2022-05/tf-2022-05-2-background--document-2--dr-tb.pdf?sfvrsn=a8757cfa_3).
+
+4. Global tuberculosis report 2022. Geneva: World Health Organization; 2022 (https://iris.who.int/handle/10665/363752).
+
+5. Guidance for the surveillance of drug resistance in tuberculosis: Sixth edition. Geneva: World Health Organization; 2020 (https://iris.who.int/handle/10665/339760). 
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+
+/* JSON data objects for the figures */
+
+var fig_1_3_1_data = `r f1.3_01_data |> toJSON("rows")`; 
+var fig_1_3_2_data = `r f1.3_02_data |> toJSON("rows")`; 
+var fig_1_3_3_data = `r f1.3_03_data |> toJSON("rows")`; 
+var fig_1_3_4_data = `r f1.3_04_data |> rename(entity=country) |> toJSON("rows")`;
+
+</script>
+
+
+```{js, echo=FALSE}
+
+function tb_format_thou_2(n) { 
+  //return thousands formatted to to significant figures
+  nt = n/1000; 
+  return num_spacer(Number(nt.toPrecision(2))*1000)
+}
+
+
+/* Functions to create the figures */
+
+function createfig_1_3_1(fig_ID, data, filter, height) {
+ 
+  	// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({		
+      dataSource: dataJSON,			
+			chartArea: {
+				height: height
+			},	      
+
+			legend: {
+				position: "bottom"
+			},
+      series: [{
+				type: "line",
+				field: "e_inc_rr_num",
+				color: "#ED1D24",
+        markers: { size: 4},
+				tooltip: {
+					visible: true,
+					template: "Estimated number of incident cases of MDR/RR-TB (#= category #): #= tb_format_thou_2(value) #"
+				}
+			},{
+				type: "rangeArea",
+				fromField: "e_inc_rr_num_lo",
+				toField: "e_inc_rr_num_hi",
+				color: "#ED1D24",
+				tooltip: {
+					visible: true,
+				format: "{0}",
+				template: "95% uncertainty interval (#= category #): #= tb_format_thou_2(value.from) #\u2013#= tb_format_thou_2(value.to) #"
+				}
+			},],      
+      
+			valueAxis: {
+        labels: {
+					template: "#= value/1e3 #"
+				},
+				title: {
+					text: "Thousands per year",
+					visible: true
+				},
+       min: 0,
+				line: {
+					visible: false
+				}
+			},      
+
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				},
+
+				title: {
+					text: "Year",
+					visible: true
+				}
+			}
+
+		});
+}
+
+
+
+function createfig_1_3_2(fig_ID, data, filter, maxvalue) {
+ 
+  	// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.case_type == filter);
+  
+		$(fig_ID).kendoChart({		
+      dataSource: dataJSON,			
+			chartArea: {
+				height: 400
+			},	      
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	  
+
+			legend: {
+				position: "bottom"
+			},
+      series: [{
+				type: "line",
+				field: "best",
+				color: "blue",
+        markers: { size: 4},
+				tooltip: {
+					visible: true,
+					template: "Proportion with MDR/RR-TB (#= category #): #= num_spacer(value) #%"
+				}
+			},{
+				type: "rangeArea",
+				fromField: "lo",
+				toField: "hi",
+				color: "blue",
+				tooltip: {
+					visible: true,
+				template: "95% uncertainty interval (#= category #): #= num_spacer(value.from) #–#= num_spacer(value.to)  #%"
+				}
+			},],      
+      
+			valueAxis: {
+        labels: {
+					format: "{0}%"
+				},
+				title: {
+					text: "Proportion with MDR/RR-TB",
+					visible: true
+				},
+				min: 0,
+				max: maxvalue,
+				line: {
+					visible: false
+				}
+			},      
+
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				},
+
+				title: {
+					text: "Year",
+					visible: true
+				}
+			}
+
+		});
+}
+
+function createfig_1_3_3(fig_ID, data, filter, height) {
+ 
+  	// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({		
+      dataSource: dataJSON,			
+			chartArea: {
+				height: height
+			},	      
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	  
+
+			legend: {
+				position: "bottom"
+			},
+      series: [{
+				type: "line",
+				field: "e_inc_rr_num",
+				color: "#ED1D24",
+        markers: { size: 4},
+				tooltip: {
+					visible: true,
+					template: "Estimated number of incident cases of MDR/RR-TB (#= category #): #= tb_format_thou_2(value) #"
+				}
+			},{
+				type: "rangeArea",
+				fromField: "e_inc_rr_num_lo",
+				toField: "e_inc_rr_num_hi",
+				color: "#ED1D24",
+				tooltip: {
+					visible: true,
+				format: "{0}",
+				template: "95% uncertainty interval (#= category #): #= tb_format_thou_2(value.from) #\u2013#= tb_format_thou_2(value.to) #"
+				}
+			},],      
+      
+			valueAxis: {
+        labels: {
+					template: "#= axis_spacer(value) #"
+				},
+				title: {
+					text: "Number per year",
+					visible: true
+				},
+       min: 0,
+				line: {
+					visible: false
+				}
+			},      
+
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				},
+
+				title: {
+					text: "Year",
+					visible: true
+				}
+			}
+
+		});
+}
+
+
+```
+
+
+```{js, echo=FALSE}
+
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function () {
+                 createfig_1_3_1("#fig_1_3_1",fig_1_3_1_data,"Global",400);
+                 
+                 createfig_1_3_3("#fig_1_3_3_EUR",fig_1_3_3_data,"European Region",250);
+                 createfig_1_3_3("#fig_1_3_3_AFR",fig_1_3_3_data,"African Region",250);
+                  createfig_1_3_3("#fig_1_3_3_EMR",fig_1_3_3_data,"Eastern Mediterranean Region",250);
+                  createfig_1_3_3("#fig_1_3_3_AMR",fig_1_3_3_data,"Region of the Americas",250);
+                  createfig_1_3_3("#fig_1_3_3_WPR",fig_1_3_3_data,"Western Pacific Region",250);
+                  createfig_1_3_3("#fig_1_3_3_SEAR",fig_1_3_3_data,"South-East Asia Region",250);
+                  
+                createfig_1_3_3("#fig_1_3_4_AGO",fig_1_3_4_data,"Angola",250);
+                 createfig_1_3_3("#fig_1_3_4_PRK",fig_1_3_4_data,"Democratic People's Republic of Korea",250);
+                 createfig_1_3_3("#fig_1_3_4_KGZ",fig_1_3_4_data,"Kyrgyzstan",250);
+                 createfig_1_3_3("#fig_1_3_4_NGA",fig_1_3_4_data,"Nigeria",250);
+                 createfig_1_3_3("#fig_1_3_4_MDA",fig_1_3_4_data,"Republic of Moldova",250);
+                 createfig_1_3_3("#fig_1_3_4_UKR",fig_1_3_4_data,"Ukraine",250);
+                 
+                 createfig_1_3_3("#fig_1_3_4_AZE",fig_1_3_4_data,"Azerbaijan",250);
+                 createfig_1_3_3("#fig_1_3_4_COD",fig_1_3_4_data,"Democratic Republic of the Congo",250);
+                 createfig_1_3_3("#fig_1_3_4_MNG",fig_1_3_4_data,"Mongolia",250);
+                 createfig_1_3_3("#fig_1_3_4_PAK",fig_1_3_4_data,"Pakistan",250);
+                 createfig_1_3_3("#fig_1_3_4_RUS",fig_1_3_4_data,"Russian Federation",250);
+                 createfig_1_3_3("#fig_1_3_4_UZB",fig_1_3_4_data,"Uzbekistan",250);
+                 
+                 createfig_1_3_3("#fig_1_3_4_BGD",fig_1_3_4_data,"Bangladesh",250);
+                 createfig_1_3_3("#fig_1_3_4_IND",fig_1_3_4_data,"India",250);
+                 createfig_1_3_3("#fig_1_3_4_MOZ",fig_1_3_4_data,"Mozambique",250);
+                 createfig_1_3_3("#fig_1_3_4_PNG",fig_1_3_4_data,"Papua New Guinea",250);
+                 createfig_1_3_3("#fig_1_3_4_SOM",fig_1_3_4_data,"Somalia",250);
+                 createfig_1_3_3("#fig_1_3_4_VNM",fig_1_3_4_data,"Viet Nam",250);
+                 
+                 createfig_1_3_3("#fig_1_3_4_BLR",fig_1_3_4_data,"Belarus",250);
+                 createfig_1_3_3("#fig_1_3_4_IDN",fig_1_3_4_data,"Indonesia",250);
+                 createfig_1_3_3("#fig_1_3_4_MMR",fig_1_3_4_data,"Myanmar",250);
+                 createfig_1_3_3("#fig_1_3_4_PER",fig_1_3_4_data,"Peru",250);
+                 createfig_1_3_3("#fig_1_3_4_ZAF",fig_1_3_4_data,"South Africa",250);
+                 createfig_1_3_3("#fig_1_3_4_ZMB",fig_1_3_4_data,"Zambia",250);
+                 
+                 createfig_1_3_3("#fig_1_3_4_CHN",fig_1_3_4_data,"China",250);
+                 createfig_1_3_3("#fig_1_3_4_KAZ",fig_1_3_4_data,"Kazakhstan",250);
+                 createfig_1_3_3("#fig_1_3_4_NPL",fig_1_3_4_data,"Nepal",250);
+                 createfig_1_3_3("#fig_1_3_4_PHL",fig_1_3_4_data,"Philippines",250);
+                 createfig_1_3_3("#fig_1_3_4_TJK",fig_1_3_4_data,"Tajikistan",250);
+                 createfig_1_3_3("#fig_1_3_4_ZWE",fig_1_3_4_data,"Zimbabwe",250);
+                 
+                 createfig_1_3_2("#fig_1_3_2_new",fig_1_3_2_data,"People with no previous history of TB treatment", 5);
+                 createfig_1_3_2("#fig_1_3_2_prev",fig_1_3_2_data,"People previously treated for TB", 40);
+
+});  
+
+```
+
+

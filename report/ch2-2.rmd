@@ -1,0 +1,1656 @@
+---
+title: "Section 2.2 Diagnostic testing"
+author: "Takuya Yamanaka"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Do not include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Do not write figure captions
+    fig_caption: FALSE
+    # to save intermediate .png
+    keep_md: true 
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: False
+
+---
+
+
+```{r setup, include=FALSE}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Kill any attempt at using factors, unless we explicitly want them!
+options(stringsAsFactors=FALSE)
+
+# Load output packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(RColorBrewer)
+library(whomap)
+library(gtbreport)
+library(here)
+library(readr)
+
+library(english) # to covert numbers to texts (e.g. 6 to six)
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+
+# Get the data sets and computed values/statistics for section 2.2 ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+source(here('report/ch2-2_prepare_data.r'))
+source(here('report/ch2-1_prepare_data.r')) # for a text to refer numbers from table 3.1.1
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ch2.2")
+save_csv = TRUE
+save_pdf = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+```
+
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+# 2.2 Diagnostic testing   
+
+<span class="red">**Draft! Prepared `r Sys.Date()` using country-reported data snapshot files from `r format(as.Date(snapshot_date), format="%d %B %Y")`!**</span>
+
+An essential step in the pathway of tuberculosis (TB) care is rapid and accurate testing. Since 2011, rapid molecular tests that are highly specific and sensitive have revolutionized the TB diagnostic landscape, which previously relied upon more traditional microscopy and culture methods. 
+
+People diagnosed with TB using rapid molecular tests recommended by WHO (`r ref_lnk("1")`), lateral flow urine lipoarabinomannan (LF-LAM) assays, sputum smear microscopy or culture are defined as "bacteriologically confirmed" cases of TB (`r ref_lnk("2")`). The microbiological detection of TB is critical because it allows people to be correctly diagnosed and started on the most effective treatment regimen as early as possible. People diagnosed with TB in the absence of bacteriological confirmation are classified as "clinically diagnosed" cases of TB. 
+
+Bacteriological confirmation of TB is necessary to test for resistance to anti-TB drugs. Such testing can be done using rapid molecular tests, phenotypic susceptibility testing or (at reference-level laboratories) genetic sequencing.
+
+
+A global total of `r ftb(f2.2.1_txt$c_newinc/1e6)` million people were newly diagnosed with TB and notified as a TB case in `r report_year-1`; of these `r ftb(f2.2.1_txt$pulm/1e6)` million (`r ftb(f2.2.1_txt$pulm_pct)`%) had pulmonary TB (`r lnk("Table 2.1.1")`). Worldwide, the percentage of people diagnosed with TB based on bacteriological confirmation improved between 2018 and 2021, from `r ftb(f2.2.1_txt$bc_pct_2018)`% to `r ftb(f2.2.1_txt$bc_pct_2021)`%; it remained at `r ftb(f2.2.1_txt$bc_pct_2022)`% in `r report_year-1` (`r lnk("Fig. 2.2.1")`). Among the six WHO regions, the highest percentage in `r report_year-1` was in the Region of the Americas (`r ftb(f2.2.1_txt$bc_pct_AMR)`%). Improvements to comparable levels are required in other regions.
+
+
+### `r anch("Fig. 2.2.1")`<span class="red">Fig. 2.2.1</span> Percentage of people newly diagnosed with  pulmonary TB who were bacteriologically confirmed, globally and for WHO regions,^a^ 2010&#8211;`r report_year-1`
+
+
+```{r fig_2.2.1, fig.alt="Panel plot of TB cases with bacteriological confirmation by WHO region and globally since 2010"}
+
+f2.2.1_plot <- f2.2.1_data %>% 
+  
+  ggplot(aes(x=year, y=bacconf_pct)) +
+    geom_line(size = 1.5, colour = "seagreen4") +
+    scale_x_continuous(name="Year",
+                       breaks = c(2000, 2005, 2010, 2015, report_year-1)) +
+    scale_y_continuous(name = "Percentage bacteriologically confirmed") +
+    expand_limits(y=c(0,100)) +
+    facet_wrap( ~ entity, ncol = 4) +
+
+    theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+
+output_ggplot(f2.2.1_plot, f2.2.1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_1_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_1_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_1_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_1_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_1_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_1_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_1_wpro"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ Data are for notified cases. The calculation for years prior to 2013 is based on smear results, except for the European Region where data on confirmation by culture were also available for the period 2010&#8211;2012.</div>
+
+
+
+<br />
+In `r report_year-1`, there was considerable country variation in the proportion of people diagnosed with a new episode of pulmonary TB who were bacteriologically confirmed (`r lnk("Fig. 2.2.2")`). 
+
+### `r anch("Fig. 2.2.2")`<span class="red">Fig. 2.2.2</span> Percentage of people newly diagnosed with pulmonary TB who were bacteriologically confirmed, by country,^a^ `r report_year-1`
+
+```{r fig_2.2.2, fig.alt="World map showing percent of TB cases with bacteriological confirmation"}
+
+f2.2.2_plot <- f2.2.2_data %>% 
+
+  whomap(colours = brewer.pal(4, "Greens"),
+         legend.title = "Percentage (%)",
+         na.col = "white",
+         water.col = "white")
+
+
+output_ggplot(f2.2.2_plot, f2.2.2_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div class="footnote">^a^ Data are for notified cases.</div>
+
+<br />
+In general in `r report_year-1`, levels of bacteriological confirmation were highest in high-income countries (median, `r ftb(f2.2.3_txt$hic)`%), where there is wide access to the most sensitive diagnostic tests, and lowest in low-income countries (median, `r ftb(f2.2.3_txt$lic)`%) (`r lnk("Fig. 2.2.3")`). Over-reliance on direct sputum smear microscopy is inherently associated with a relatively high proportion of pulmonary TB cases that are clinically diagnosed, as opposed to bacteriologically confirmed. 
+
+### `r anch("Fig. 2.2.3")`<span class="red">Fig. 2.2.3</span> The proportion of people newly diagnosed with pulmonary TB who were bacteriologically confirmed in `r report_year-1`,^a^ by country income group  
+<div class="subhead">Boxes indicate the first, second (median) and third quartiles weighted by a country's number of notified cases of pulmonary TB; vertical lines extend to the minimum and maximum values. Countries with less than 100 cases are excluded.</div> 
+
+```{r fig_2.2.3, fig.height=8, fig.alt="Boxplot showing proportion of pulmonary TB cases that were bacteriologically confirmed by World Bank country income group. "} 
+
+f2.2.3_plot <- f2.2.3_data %>%
+  filter(year == report_year-1 & !is.na(income) & bacconf_pct_denominator>=100) %>%
+  ggplot(aes(x=income, y=bacconf_pct*100, fill=income)) + 
+  geom_boxplot() +
+  scale_fill_manual(values = c("#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3"))+
+  xlab('Income group') + ylab('Percent confirmed') +
+  theme_gtb()
+
+output_ggplot(f2.2.3_plot, f2.2.3_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div id="fig_2_2_3"></div>
+
+<div class="footnote">^a^ Data are for notified cases.</div>
+
+
+
+<br />
+In the 30 high TB burden countries (`r lnk("Fig. 2.2.4")`), variation in the proportion of people diagnosed with pulmonary TB who were bacteriologically confirmed likely reflects differences in diagnostic and reporting practices. The countries with relatively high levels of bacteriological confirmation in 2022 (75% or above) were `r sub("Democratic", "the Democratic", knitr::combine_words(f2.2.4_txt_list_hi$country, oxford_comma=FALSE))`. 
+
+There is clear scope for improvement in most other high TB burden countries. This is particularly needed in `r gsub("(Democrat)|(Unite)", "the \\1\\2\\3", knitr::combine_words(f2.2.4_txt_list_lo$country, oxford_comma=FALSE))`, where levels of bacteriological confirmation remained around or below 50% in 2022. Such levels of bacteriological confirmation show overdependence on clinical diagnosis of TB and potentially over-diagnosis. When the proportion of people diagnosed with pulmonary TB based on bacteriological confirmation falls to around or below 50%, a review of the diagnostic tests in use and the validity of clinical diagnoses is warranted (e.g. via a clinical audit).
+
+### `r anch("Fig. 2.2.4")`<span class="red">Fig. 2.2.4</span> Percentage of people newly diagnosed^a^ with pulmonary TB who were bacteriologically confirmed, 30 high TB burden countries, 2010&#8211;`r report_year-1`
+
+```{r fig_2.2.4, fig.alt="Panel plot of TB cases with bacteriological confirmation for 30 countries since 2010", fig.height=12}
+
+f2.2.4_plot <- f2.2.4_data %>% 
+  
+  ggplot(aes(x=year, y=bacconf_pct)) +
+  geom_line(size = 1.5, colour = "seagreen4") +
+  scale_x_continuous(name="Year",
+                     breaks = c(2000, 2010, report_year-1)) +
+  scale_y_continuous(name = "Percentage bacteriologically confirmed") +
+  expand_limits(y=c(0,100)) +
+  facet_wrap( ~ country, 
+              scales="free_y",
+              ncol = 5,
+              # Use the labeller function to make sure long country names are wrapped in panel headers
+              labeller = label_wrap_gen(width = 20)) +
+
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.2.4_plot, f2.2.4_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_AGO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_BGD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_BRA"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_CAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_CHN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_COG"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_PRK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_COD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_ETH"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_GAB"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_IND"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_IDN"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_KEN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_LSO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_LBR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_MNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_MOZ"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_MMR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_NAM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_NGA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_PAK"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_PNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_PHL"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_SLE"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_ZAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_THA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_UGA"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_4_TZA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_VNM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_4_ZMB"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ Data are for notified cases.</div>
+
+
+
+<br />
+Globally in `r report_year-1`, a WHO-recommended rapid diagnostic test (WRD) was used as the initial diagnostic test for `r ftb(f2.2.5_txt$wrd_pcnt_2022)`% (`r ftb(f2.2.5_txt$newinc_rdx_2022/1e6)` million) of the `r ftb(f2.2.1_txt$c_newinc/1e6)` million people newly diagnosed with TB in `r report_year-1`, up from `r ftb(f2.2.5_txt$wrd_pcnt_2021)`% (out of a total of `r ftb(f2.2.1_txt$c_newinc_2021/1e6)` million) in `r report_year-2` and `r ftb(f2.2.5_txt$wrd_pcnt_2020)`% (out of a total of `r ftb(f2.2.1_txt$c_newinc_2020/1e6)` million) in  `r report_year-3` (`r lnk("Fig. 2.2.5")`). Among WHO regions, the best level of coverage was achieved in the European Region (`r ftb(f2.2.5_txt$euro)`%); the lowest coverage was in the South-East Asia Region (`r ftb(f2.2.5_txt$searo)`%). 
+
+### `r anch("Fig. 2.2.5")`<span class="red">Fig. 2.2.5</span> Percentage of people newly diagnosed with TB who were initially tested with a WHO-recommended rapid diagnostic test (WRD), globally and for WHO regions, 2015&#8211;`r report_year-1`
+
+```{r fig_2.2.5, fig.alt="global trend: percent of TB cases tested with rapid diagnostics"}
+
+f2.2.5_plot <- f2.2.5_data %>% 
+  
+  ggplot(aes(x=year, y=wrd_pcnt)) +
+  geom_line(size = 1.5, colour = "blueviolet") +
+  scale_x_continuous(name="Year",
+                     breaks = c(2015, 2017, 2019, 2021, report_year-1)) +
+  scale_y_continuous(name = "Percentage") +
+  expand_limits(y=c(0,100)) +
+  
+  facet_wrap( ~ entity, ncol = 4) +
+
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.2.5_plot, f2.2.5_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div id="fig_2_2_5"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_5_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_5_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_5_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_5_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_5_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_5_wpro"></div>
+</div>
+</div>
+
+
+<div class="footnote">^a^ Data are for notified cases.</div>
+
+<br />
+Use of WRDs varied substantially among countries in `r report_year-1` (`r lnk("Fig. 2.2.6")`). 
+
+### `r anch("Fig. 2.2.6")`<span class="red">Fig. 2.2.6</span> Percentage of people newly diagnosed with TB who were initially tested with a WHO-recommended rapid diagnostic test (WRD), by country,^a^ `r report_year-1`
+
+```{r fig_2.2.6, fig.alt="World map showing percent of TB cases tested with rapid diagnostics"}
+
+f2.2.6_plot <- f2.2.6_data %>% 
+  
+  whomap(colours = brewer.pal(5, "Purples"),
+         legend.title = "Percentage (%)",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f2.2.6_plot, f2.2.6_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ Data are for notified cases.</div>
+
+<br />
+Among the 30 high TB burden countries, those with the high proportions (&#8805; 80%) of people diagnosed with TB who were initially tested with a WRD included `r sub("Democratic", "the Democratic", knitr::combine_words(f2.2.6_txt_list$country, oxford_comma=FALSE))` (`r lnk("Fig. 2.2.7")`). 
+
+Among the 49 countries in one of the three global lists of high burden countries (for TB, HIV-associated TB and MDR/RR-TB) being used by WHO in the period 2021&#8211;2025 (<span class="red">Annex 3</span>), `r f2.2.5_txt$hbcs_2022` reported that a WRD had been used as the initial test for more than half of their notified TB cases in `r report_year-1`, up from `r f2.2.5_txt$hbcs_2021` in `r report_year-2` and `r f2.2.5_txt$hbcs_2020` in `r report_year-3`. 
+
+### `r anch("Fig. 2.2.7")`<span class="red">Fig. 2.2.7</span> Percentage of people newly diagnosed with TB who were initially tested with a WHO-recommended rapid diagnostic test (WRD), 30 high TB burden countries, 2015&#8211;`r report_year-1`
+
+```{r fig_2.2.7, fig.alt="trend showing percent of TB cases tested with rapid diagnostics", fig.height=12}
+
+f2.2.7_plot <- f2.2.7_data %>% 
+  filter(!is.na(wrd_pcnt)) %>%
+  ggplot(aes(x=year, y=wrd_pcnt)) +
+  geom_line(size = 1.5, colour = "blueviolet") +
+  scale_x_continuous(name="Year",
+                     breaks = c(2015, 2017, 2019, 2021, report_year-1)) +
+  scale_y_continuous(name = "Percentage") +
+  expand_limits(y=c(0,100)) +
+  facet_wrap( ~ entity, 
+              scales="free_y",
+              ncol = 5,
+              # Use the labeller function to make sure long country names are wrapped in panel headers
+              labeller = label_wrap_gen(width = 20)) +
+
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.2.7_plot, f2.2.7_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_AGO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_BGD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_BRA"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_CAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_CHN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_COG"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_PRK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_COD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_ETH"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_GAB"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_IND"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_IDN"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_KEN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_LSO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_LBR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_MNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_MOZ"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_MMR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_NAM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_NGA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_PAK"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_PNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_PHL"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_SLE"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_ZAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_THA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_UGA"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_7_TZA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_VNM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_7_ZMB"></div>
+</div>
+</div>
+
+<br />
+In `r report_year-1`, the proportion of TB diagnostic sites with access to WRDs varied considerably by country (`r lnk("Fig. 2.2.8")`). Only `r as.character(english(f2.2.8_txt$hbc_wrd50over))` of the 30 high TB burden countries reported that more than 50% of their TB diagnostic sites had access to WRDs. Expanding access to TB diagnosis using rapid tests should be a top priority in many countries. Globally, the median was `r ftb(f2.2.8_txt$median)`% (interquartile range (IQR): `r ftb(f2.2.8_txt$q1)`&#8211;`r ftb(f2.2.8_txt$q3)`%). 
+
+### `r anch("Fig. 2.2.8")`<span class="red">Fig. 2.2.8</span> Proportion of diagnostic sites for TB with access to WHO-recommended rapid diagnostic tests (WRDs), by country, `r report_year-1`
+
+```{r fig_2.2.8, fig.alt="World map showing proportion of diagnostic sites with WRDs"}
+
+f2.2.8_plot <- f2.2.8_data %>% 
+  
+  whomap(colours = brewer.pal(5, "Blues"),
+         legend.title = "Proportion (%)",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f2.2.8_plot, f2.2.8_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+```
+
+
+
+<br />
+A second indicator that can be used to assess access to rapid testing for TB is the number of WRDs used per capita. In `r report_year-2` and `r report_year-1`, there was substantial variation among the 30 high TB burden countries (`r lnk("Fig. 2.2.9")`). The `r int2word(f2.2.9_txt)` countries that exceeded 1000 tests per 100 000 population were all in the African Region: `r sub("Democratic", "the Democratic", knitr::combine_words(f2.2.9_txt_list$entity, oxford_comma=FALSE))`. In most of the 30 high TB burden countries, the number per capita increased between 2021 and 2022.
+
+### `r anch("Fig. 2.2.9")`<span class="red">Fig. 2.2.9</span> Number of WHO-recommended rapid diagnostic tests (WRDs) used per 100 000 population, 30 high TB burden countries, WHO regions and globally, `r report_year-2` and `r report_year-1`^a^
+
+```{r fig_2.2.9, fig.alt="plot showing number of WHO-recommended rapid diagnostic tests - a", fig.asp=1}
+f2.2.9_plot <- f2.2.9_data %>%
+  mutate(entity = factor(entity, levels = rev(f2.2.9_sel_order$entity), ordered = TRUE)) %>% 
+  mutate(year = factor(year, labels = c("2021","2022"))) %>% 
+  
+  ggplot(aes(x=entity,
+             y=median,
+             group = year)) +
+  geom_point(size=4,
+             aes(col=year)) +
+
+  scale_color_manual(values=c("goldenrod3","dodgerblue3")) +
+
+  labs(x="",
+       y="Number") +
+
+  expand_limits(y=0) + ylim(0,4500) +
+  coord_flip() +
+  theme_gtb() 
+
+output_ggplot(f2.2.9_plot, f2.2.9_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_9"></div>
+
+<div class="footnote">^a^ Data for this indicator have been collected since 2021.</div>
+
+<br />
+The percentage of people initially tested with a WRD who had a positive test result provides an indication of the level of case-finding efforts (`r lnk("Fig. 2.2.10")`). A low percentage suggests a lack of precision in deciding who to test, while a high percentage suggests suboptimal efforts to detect people with TB. In `r report_year-2` and `r report_year-1`, there was considerable variation among the 30 high TB burden countries and WHO regions.
+
+### `r anch("Fig. 2.2.10")`<span class="red">Fig. 2.2.10</span> Percentage of people initially tested for TB with a WHO-recommended rapid diagnostic test (WRD) who had a positive test result, 30 high TB burden countries, WHO regions and globally,^a^ `r report_year-2` and `r report_year-1`^a^
+```{r fig_2.2.10, fig.alt="Forest plot showing proportion of positive WHO-recommended rapid diagnostic tests", fig.asp=1}
+
+f2.2.10_plot <- f2.2.10_data %>% 
+
+  ggplot(aes(x=entity,
+             y=median,
+             group = year)) +
+  geom_point(size=4,
+             aes(col=year)) +
+
+  scale_color_manual(values=c("goldenrod3","limegreen")) +
+  
+  labs(x="",
+       y="Percentage") +
+  
+  geom_pointrange(aes(ymin=q1,
+                      ymax=q3,
+                      col=year),
+                  size=1) +
+  
+  expand_limits(y=0) + ylim(0,90) +
+  coord_flip() +
+  theme_gtb() 
+  
+output_ggplot(f2.2.10_plot, f2.2.10_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_10"></div>
+<div class="footnote">^a^ Data for this indicator have been collected since 2021.</div>
+
+
+
+<br />
+The number of WRDs used per person notified as a TB case also provides an indication of the level of diagnostic effort based on rapid tests. In `r report_year-2` and `r report_year-1`, the number of rapid tests per notified case varied widely in the 30 high TB burden countries, from less than two in `r f2.2.11_txt` countries to a high of `r ftb(f2.2.11_txt_list$median)` in `r f2.2.11_txt_list$entity` (`r lnk("Fig. 2.2.11")`). In most of these countries, the number of tests per case increased between 2021 and 2022.
+
+### `r anch("Fig. 2.2.11")`<span class="red">Fig. 2.2.11</span> Number of WHO-recommended rapid diagnostic tests (WRDs) per person notified as a TB case (new and relapse cases, all forms), 30 high TB burden countries, `r report_year-2` and `r report_year-1`^a^
+```{r fig_2.2.11, fig.alt="Forest plot showing WHO-recommended rapid diagnostic tests per notification", fig.asp=1}
+
+f2.2.11_plot <- f2.2.11_data %>%
+
+  mutate(entity = factor(entity, levels = rev(f2.2.11_sel_order$entity), ordered = TRUE)) %>% 
+  mutate(year = factor(year, labels = c("2021","2022"))) %>% 
+
+  ggplot(aes(x=entity,
+             y=median,
+             group = year)) +
+  geom_point(size=4,
+             aes(col=year)) +
+
+  scale_color_manual(values=c("goldenrod3","blueviolet")) +
+
+
+  labs(x="",
+       y="Number") +
+
+  expand_limits(y=0) + ylim(0,15) +
+  coord_flip() +
+  theme_gtb() 
+
+output_ggplot(f2.2.11_plot, f2.2.11_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_11"></div>
+<div class="footnote">^a^ Data for this indicator have been collected since 2021.</div>
+
+<br />
+Of the `r ftb(f2.2.1_txt$c_newinc/1e6)` million people newly diagnosed with TB globally in `r report_year-1`, `r ftb(f2.2.12_txt$Global_2022)`% had a documented HIV test result, a further improvement from `r ftb(f2.2.12_txt$Global_2021)`% in `r report_year-2` (`r lnk("Fig. 2.2.12")`). At regional level, the highest percentages were achieved in the WHO African and European regions.
+
+### `r anch("Fig. 2.2.12")`<span class="red">Fig. 2.2.12</span> Percentage of people newly diagnosed with TB whose HIV status was documented,^a^ globally and for WHO regions,^b^ 2010&#8211;`r report_year-1`
+
+```{r fig_2.2.12, fig.alt="Panel plot of TB cases with known HIV status by WHO region and globally since 2004"}
+
+f2.2.12_plot <- f2.2.12_data %>% 
+  
+  ggplot(aes(x=year, y=hivstatus_pct)) +
+  
+  geom_line(size = 1.5, colour = "#FA4871") +
+  
+  scale_x_continuous(name= "Year", breaks = seq(2010, 2022, by=4)) +
+  scale_y_continuous(name = "Percentage with documented HIV status") +
+  expand_limits(y=c(0,100)) +
+  facet_wrap( ~ entity, ncol = 4) +
+  
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.2.12_plot, f2.2.12_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_12_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_12_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_12_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_12_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_12_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_12_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_12_wpro"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ The calculation is for all cases in years prior to 2015.  
+^b^ Countries were excluded if the number of people with documented HIV status was not reported to WHO.</div>
+
+
+
+<br />
+There was considerable variation at national level (`r lnk("Fig. 2.2.13")`). In `r f2.2.13_txt$over_90` countries and territories, at least 90% of people diagnosed with TB knew their HIV status; this included `r f2.2.13_txt_afr`/47 countries in the African Region, where the burden of HIV-associated TB is highest. In most countries, the percentage was above 50%, but in `r f2.2.13_txt_lo` countries in `r report_year-1`, less than half of the people diagnosed with TB knew their HIV status: `r sub("Democratic", "the Democratic", knitr::combine_words(f2.2.13_txt_lo_list$country, oxford_comma=FALSE))`.
+
+### `r anch("Fig. 2.2.13")`<span class="red">Fig. 2.2.13</span> Percentage of people newly diagnosed with TB whose HIV status was documented, by country, `r report_year-1`
+
+```{r fig_2.2.13, fig.alt="World map showing percent of TB cases with known HIV status"}
+
+f2.2.13_plot <- f2.2.13_data %>% 
+  
+  whomap(colours = brewer.pal(4, "RdPu"),
+         legend.title = "Percentage (%)",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f2.2.13_plot, f2.2.13_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<br />
+Worldwide in `r report_year-1`, a total of `r int_spacer(t2.1.1_txt$newrel_hivpos)` cases of TB among people living with HIV were notified (`r lnk("Table 2.1.1")`), equivalent to `r ftb(f2.2.12_txt$hivtest_pos_pct)`% of the `r ftb(f2.2.12_txt$hivtest_pos_pct_denominator/1e6)` million people diagnosed with TB who had an HIV test result. Overall, the percentage of people diagnosed with TB who had an HIV-positive test result has fallen globally over the past ten years. 
+
+Bacteriological confirmation of TB is necessary to test for drug-resistant TB. Globally in `r report_year-1`, `r ftb(f2.2.14_txt$dst_pct_Global_2022)`% of people with bacteriologically confirmed TB were tested for resistance to rifampicin (the most effective first-line anti-TB drug), up from `r ftb(f2.2.14_txt$dst_pct_Global_2021)`% in `r report_year-2` (`r lnk("Fig. 2.2.14")`). There were also improvements in five of the six WHO regions; the exception was the WHO European Region. 
+
+### `r anch("Fig. 2.2.14")`<span class="red">Fig. 2.2.14</span> Percentage of people diagnosed with bacteriologically confirmed TB who were tested for rifampicin-resistant TB (RR-TB^a^), globally and for WHO regions, 2010&#8211;`r report_year-1`
+
+```{r fig_2.2.14, fig.alt="Panel plot of TB cases tested for susceptibility to rifampicin by WHO region and globally"}
+
+f2.2.14_plot <- f2.2.14_data %>% 
+  
+  ggplot(aes(x=year, y=dst_pcnt, ymin=0)) +
+  geom_line(size = 1.5, colour = "#e52000") +
+
+  facet_wrap( ~ entity, ncol = 4, scales="fixed") +
+  scale_x_continuous(breaks = c(2009, 2015, report_year-1)) +
+  scale_y_continuous(name = "Percentage tested") +
+  expand_limits(y=c(0,100)) +
+  xlab("Year") +
+
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.2.14_plot, f2.2.14_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_14_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_14_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_14_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_14_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_14_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_14_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_14_wpro"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ Includes both new and previously treated cases; data for 2017 onwards are for pulmonary cases only.</div>
+
+<br />
+In `r report_year-1`, there was considerable variation in the coverage of testing for rifampicin-resistant TB (RR-TB) among countries (`r lnk("Fig. 2.2.15")`). Of the 30 countries (see <span class="red">Annex 3</span>) that WHO has defined as high burden for multidrug-resistant/RR-TB (MDR/RR-TB; MDR-TB is defined as resistance to both rifampicin and isoniazid), `r nrow(f2.2.15_txt)` reached a coverage of at least 80% in `r report_year-1`: `r gsub("(Republic)|(Russian)|(Philip)", "the \\1\\2\\3", knitr::combine_words(f2.2.15_txt$country, oxford_comma=FALSE))`.
+
+### `r anch("Fig. 2.2.15")`<span class="red">Fig. 2.2.15</span> Percentage of people diagnosed with bacteriologically confirmed TB who were tested for rifampicin-resistant TB (RR-TB^a^), by country, `r report_year-1`
+
+```{r fig_2.2.15, fig.alt="World map showing percent of TB cases tested for susceptibility to rifampicin"}
+
+f2.2.15_plot <- f2.2.15_data %>% 
+  
+  whomap(colours = brewer.pal(4, "Reds"),
+         legend.title = "Percentage (%)",
+         na.col = "White",
+         water.col = "white")
+
+output_ggplot(f2.2.15_plot, f2.2.15_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ Includes both new and previously treated cases; data are for pulmonary cases only.</div>
+
+
+
+<br />
+Among people tested for RR-TB, a total of `r int_spacer(f2.2.16_txt$conf_rr_nfqr_2022)` cases of MDR/RR-TB and `r int_spacer(f2.2.16_txt$conf_rr_fqr_2022)` cases of pre-extensively drug-resistant TB (pre-XDR-TB) or XDR-TB were detected (<span class="red">Table 2.1.1</span>), for a combined total of `r int_spacer(f2.2.16_txt$rr_nfqr_fqr_2022)`. This was a small increase (`r ftb(f2.2.16_txt$rr_nfqr_pct_dif_2022)`%) from a combined total of `r int_spacer(f2.2.16_txt$rr_nfqr_fqr_2021)` in `r report_year-2`, and smaller than the `r ftb(f2.2.16_txt$c_newinc_pct_dif_2022)`% increase in the number of people diagnosed and reported with TB between `r report_year-2` and `r report_year-1` (<span class="red">Section 2.1</span>). Since 2021, pre-XDR-TB is defined as MDR/RR-TB plus resistance to any fluoroquinolone (`r ref_lnk("3")`).
+
+The global and regional coverage of testing for susceptibility to fluoroquinolones, which is necessary to determine the most appropriate treatment regimen for people with RR-TB (`r ref_lnk("4")`), is lower than the coverage of testing for RR-TB (`r lnk("Fig. 2.2.16")`). Among WHO regions in 2022, coverage was highest in the WHO European Region (`r ftb(f2.2.16_txt2$eur)`%) and lowest in the Western Pacific Region (`r ftb(f2.2.16_txt2$wpr)`%).
+
+### `r anch("Fig. 2.2.16")`<span class="red">Fig. 2.2.16</span> Percentage of people diagnosed with rifampicin-resistant TB (RR-TB) who were tested for susceptibility to fluoroquinolones,^a^ globally and for WHO regions, 2015&#8211;`r report_year-1`
+
+```{r fig_2.2.16, fig.alt="Panel plot of RR-TB cases tested for susceptibility to fluoroquinolones by WHO region and globally since 2015"}
+
+f2.2.16_plot <- f2.2.16_data %>% 
+  
+  ggplot(aes(x=year, y=fqdst_pct, ymin=0)) +
+  geom_line(size = 1.5, colour = "#277abe") +
+  
+  scale_x_continuous(name="Year",
+                     breaks = seq(2015, report_year-1)) +
+  scale_y_continuous(name = "Percentage tested") +
+  expand_limits(y=c(0,100)) +
+  facet_wrap( ~ entity, ncol = 4) +
+
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f2.2.16_plot, f2.2.16_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_2_2_16_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_16_afro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_16_amro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_16_searo"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_2_2_16_euro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_16_emro"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_2_2_16_wpro"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ Testing in years prior to 2019 also included testing for susceptibility to second-line injectables.</div>
+
+
+
+<br />
+There is considerable country variation in the proportion of people diagnosed with RR-TB who were tested for susceptibility to fluoroquinolones (`r lnk("Fig. 2.2.17")`).
+
+### `r anch("Fig. 2.2.17")`<span class="red">Fig. 2.2.17</span> Percentage of people diagnosed with rifampicin-resistant TB (RR-TB) who were tested for susceptibility to fluoroquinolones, by country, `r report_year-1`
+
+```{r fig_2.2.17, fig.alt="World map showing percent of MDR/RR-TB cases tested for susceptibility to fluoroquinolones"}
+
+f2.2.17_plot <- f2.2.17_data %>% 
+  
+  whomap(colours = brewer.pal(4, "Blues"),
+         legend.title = "Percentage (%)",
+         na.col = "White",
+         water.col = "white")
+
+output_ggplot(f2.2.17_plot, f2.2.17_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+
+<br />
+Bedaquiline is recommended by WHO as part of treatment regimens for people with MDR/RR-TB and pre-XDR-TB (`r ref_lnk("4")`). In `r report_year-1`, the percentage of people with pre-XDR-TB who were tested for susceptibility to bedaquiline remained low in most parts of the world (`r lnk("Fig. 2.2.18")`).
+
+
+### `r anch("Fig. 2.2.18")`<span class="red">Fig. 2.2.18</span> Percentage of people diagnosed with pre-XDR-TB^a^ who were tested for susceptibility to bedaquiline, by country, `r report_year-1`
+
+```{r fig_2.2.18, fig.alt="World map showing percent of pre-XDR-TB cases tested for susceptibility to bedaquiline"}
+
+f2.2.18_plot <- f2.2.18_data %>% 
+  
+  whomap(colours = brewer.pal(4, "Greens"),
+         legend.title = "Percentage (%)",
+         na.col = "White",
+         water.col = "white")
+
+output_ggplot(f2.2.18_plot, f2.2.18_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ Defined as MDR/RR-TB plus resistance to any fluoroquinolone.</div>
+
+
+<br />
+Linezolid is also recommended by WHO as part of treatment regimens for MDR/RR-TB as well as pre-XDR-TB (`r ref_lnk("4")`). In `r report_year-1`, the percentage of people with pre-XDR-TB who were tested for susceptibility to linezolid remained low in most parts of the world (`r lnk("Fig. 2.2.19")`).
+
+
+### `r anch("Fig. 2.2.19")`<span class="red">Fig. 2.2.19</span> Percentage of people diagnosed with pre-XDR-TB^a^ who were tested for susceptibility to linezolid, by country, `r report_year-1`
+
+```{r fig_2.2.19, fig.alt="World map showing percent of pre-XDR-TB cases tested for susceptibility to linezolid"}
+
+f2.2.19_plot <- f2.2.19_data %>% 
+  
+  whomap(colours = brewer.pal(4, "Oranges"),
+         legend.title = "Percentage (%)",
+         na.col = "White",
+         water.col = "white")
+
+output_ggplot(f2.2.19_plot, f2.2.19_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ Defined as MDR/RR-TB plus resistance to any fluoroquinolone.</div>
+
+<br />
+Further country-specific details about diagnostic testing for TB, HIV-associated TB and anti-TB drug resistance are available in the [Global tuberculosis report app](https://www.who.int/teams/global-tuberculosis-programme/data#app) and [country profiles](https://worldhealthorg.shinyapps.io/tb_profiles/).
+
+Data shown on this webpage are as of `r format(as.Date(snapshot_date), format="%d %B %Y")` (see <span class="red">Annex 2</span> of the main report for more details).
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. WHO consolidated guidelines on tuberculosis. Module 3: Diagnosis &#8211; rapid diagnostics for tuberculosis detection 2021 update. Geneva: World Health Organization; 2021 (https://iris.who.int/handle/10665/342331).
+  
+2. Definitions and reporting framework for tuberculosis &#8211; 2013 revision (updated December 2014 and January 2020) (WHO/HTM/TB/2012.2). Geneva: World Health Organization; 2013 (https://iris.who.int/handle/10665/79199).
+  
+3. Meeting report of the WHO expert consultation on the definition of extensively drug-resistant tuberculosis, 27-29 October 2020. Geneva: World Health Organization; 2021 (https://iris.who.int/handle/10665/338776).
+  
+4. WHO consolidated guidelines on tuberculosis. Module 4: Treatment &#8211; drug-resistant tuberculosis treatment. Geneva: World Health Organization; 2020 (https://iris.who.int/handle/10665/332397).
+  
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+/* JSON data objects for the figures */
+
+var fig_2_2_1_data = `r f2.2.1_data %>% select(year,entity,value=bacconf_pct) %>% toJSON("rows")`   ;  
+
+var fig_2_2_3_data = [{"income":"Low-income","lower":42.9353,"q1":63.1672,"median":70.8954,"q3":81.4344,"upper":96.4299,"color":"#66C2A5"},{"income":"Lower-middle-income","lower":38.1871,"q1":63.3816,"median":76.4921,"q3":86.0583,"upper":94.316,"color":"#FC8D62"},{"income":"Upper-middle-income","lower":51.8219,"q1":72.4573,"median":77.9326,"q3":85.5078,"upper":100,"color":"#8DA0CB","outliers": [49.5028,36.8298]},{"income":"High-income","lower":74.422,"q1":85.9127,"median":90.5028,"q3":93.8272,"upper":98.1073,"color":"#E78AC3","outliers": [62.4161,67.8322,47.2351,57.7586]}]   ;  
+
+var fig_2_2_4_data = `r f2.2.4_data  %>% toJSON("rows")` ;  
+
+var fig_2_2_5_data = `r f2.2.5_data  %>% toJSON("rows")` ;  
+
+var fig_2_2_7_data = `r f2.2.7_data  %>% toJSON("rows")` ;  
+
+var fig_2_2_9_data = `r f2.2.9_data  %>% select(entity, year, median) %>% pivot_wider(names_from = year, values_from = median) %>% rename(median_2021=2, median_2022=3) %>% arrange(desc(median_2022)) %>% toJSON("rows")`   ;
+
+var fig_2_2_10_data = `r f2.2.10_data_kendo %>% select(entity, year, median, q1, q3) %>% pivot_wider(names_from = year, values_from = median:q3)  %>% toJSON("rows")`   ;
+
+var fig_2_2_11_data = `r f2.2.11_data %>% select(entity, year, median) %>% pivot_wider(names_from = year, values_from = median) %>% rename(median_2021=2, median_2022=3) %>% arrange(desc(median_2022)) %>% toJSON("rows")`   ;
+
+var fig_2_2_12_data = `r f2.2.12_data  %>% select(year, entity, value=hivstatus_pct) %>% toJSON("rows")`   ;  
+
+var fig_2_2_14_data = `r f2.2.14_data  %>% select(year, entity, value=dst_pcnt) %>% toJSON("rows")`   ;  
+
+var fig_2_2_16_data = `r f2.2.16_data  %>% select(year, entity, value=fqdst_pct) %>% toJSON("rows")`   ;  
+
+</script>
+
+```{js, echo=FALSE}
+
+function createFig_2_2_1(fig_ID, data, filter, x_axis_title = True, y_axis_title = True, color, y_axis_title_text) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: 250
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+				field: "value",
+				color: color, 
+        markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				format: "{0:0.00}",
+				template: "#= category #: #= value.toPrecision(2) #%",
+			}
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: y_axis_title_text,
+					visible: y_axis_title,
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        max: 100,
+        min: 0
+			},
+			categoryAxis: {
+				field: "year",
+        labels: {
+					rotation: 0,
+          step: 2
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+					visible: x_axis_title
+				}
+			}
+
+		});
+}
+
+function createFig_2_2_3() {
+		$("#fig_2_2_3").kendoChart({
+			dataSource: fig_2_2_3_data,
+			chartArea: {
+				height: 600
+			},	
+			legend: {
+				position: "bottom"
+			},
+			series: [{
+        type: "boxPlot",
+        color: "color",
+        lowerField: "lower",
+        q1Field: "q1",
+        medianField: "median",
+        q3Field: "q3",
+        upperField: "upper",
+        outliersField: "outliers",
+        categoryField: "income",
+                    tooltip: {
+                        visible: true,
+                        format: "<table>" +
+                            "<tr><th colspan='2'>{6:d}</th></tr>" +
+                            "<tr><td>Lower:</td><td>{0:n0}%</td></tr>" +
+                            "<tr><td>Q1:</td><td>{1:n0}%</td></tr>" +
+                            "<tr><td>Median:</td><td>{2:n0}%</td></tr>" +
+                            "<tr><td>Q3:</td><td>{3:n0}%</td></tr>" +
+                            "<tr><td>Upper:</td><td>{4:n0}%</td></tr>" +
+                            "</table>"
+                    }
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Percentage bacteriologically confirmed"
+				},
+				line: {
+					visible: false
+				},
+				max: 100,
+				min: 30
+			},
+			categoryAxis: {
+				field: "income",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Income group"
+				}
+			},
+
+		});
+}
+
+function createFig_2_2_4(fig_ID, data, filter, x_axis_title = True, y_axis_title = True) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.country == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: 250
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+				field: "bacconf_pct",
+				color: "#2e8b57", 
+        markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				format: "{0:0.00}",
+				template: "#= category #: #= value.toPrecision(2) #%",
+			}
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Percentage\nbacterioloically confirmed",
+					visible: y_axis_title,
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        max: 100,
+        min: 0
+			},
+			categoryAxis: {
+				field: "year",
+        labels: {
+					rotation: 0,
+          step: 2
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+					visible: x_axis_title
+				}
+			}
+
+		});
+}
+
+function createFig_2_2_7(fig_ID, data, filter, x_axis_title = True, y_axis_title = True, height) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: height
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+				field: "wrd_pcnt",
+				color: "#8A2BE2", 
+        markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				format: "{0:0.00}",
+				template: "#= category #: #= tb_format_pct(value) #%",
+			}
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Percentage",
+					visible: y_axis_title,
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        max: 104,
+        min: 0
+			},
+			categoryAxis: {
+				field: "year",
+        labels: {
+					rotation: 0,
+          step: 1
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+					visible: x_axis_title
+				}
+			}
+
+		});
+}
+
+
+function createFig_2_2_9(fig_ID, data, color) {
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 800
+			},	
+			legend: {
+				position: "bottom"
+			},
+			series: [{
+        type: "bar",
+				field: 0,
+				opacity: 0
+			},{
+        type: "line",
+				field: "median_2021",
+        opacity: 0,
+				color: "goldenrod",
+        markers: {
+          visible: true,
+          background: "goldenrod",
+          size: 10
+        },
+			tooltip: {
+				visible: true,
+        background: "goldenrod",
+				template: "#= category # (2021): #= num_spacer(value) # per 100 000"
+			}
+			}, {
+        type: "line",
+				field: "median_2022",
+        opacity: 0,
+				color: color,
+        markers: {
+          visible: true,
+          background: color,
+          size: 10
+        },
+			tooltip: {
+				visible: true,
+        background: color,
+				template: "#= category # (2022): #= num_spacer(value) # per 100 000"
+			}
+			}, {
+        type: "line",
+				name: "2021",
+				color: "goldenrod"
+			},{
+        type: "line",
+				name: "2022",
+				color: color
+			},
+              ],
+			valueAxis: {
+				majorUnit: 1000,
+				labels: {
+					template: "#= axis_spacer(value) #"
+				},
+				title: {
+					text: "Number"
+				},
+				line: {
+					visible: false
+				},
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: true
+				}
+			}
+
+		});
+}
+
+function createFig_2_2_10(fig_ID, data, color) {
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 900
+			},	
+			legend: {
+				position: "bottom"
+			},
+			series: [{
+        type: "bar",
+				field: 0,
+				opacity: 0
+			}, {
+        type: "line",
+				field: "median_2021",
+        opacity: 0,
+				color: "goldenrod",
+        markers: {
+          visible: true,
+          background: "goldenrod",
+          size: 10
+        },
+			tooltip: {
+				visible: true,
+        background: "goldenrod",
+				template: "#= category #: #= tb_format_pct(value) #%"
+			}
+			},{
+        type: "line",
+				field: "median_2022",
+        errorLowField: "q1_2022",
+        errorHighField: "q3_2022",
+        errorBars: {color: color, line: { width: 3 }},
+        opacity: 0,
+				color: color,
+        markers: {
+          visible: true,
+          background: color,
+          size: 10
+        },
+			tooltip: {
+				visible: true,
+        background: color,
+				template: "#= category #: #= tb_format_pct(value) #%"
+			}
+			},{
+				type: "rangeArea",
+				fromField: "q1_2022",
+				toField: "q3_2022",
+				opacity: 0,
+        color: color,
+				tooltip: {
+					visible: true,
+          background: color,
+				format: "{0}",
+				template: "#= category # (interquartile range, 2022): #= tb_format_pct(value.from) #\u2013#= tb_format_pct(value.to) #%"
+				}
+			},{
+        type: "line",
+				name: "2021",
+				color: "goldenrod"
+			},{
+        type: "line",
+				name: "2022",
+				color: color
+			},
+              ],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Percentage"
+				},
+				line: {
+					visible: false
+				},
+        min: 0,
+        max: 100
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: true
+				}
+			}
+
+		});
+}
+
+  function createFig_2_2_11(fig_ID, data, color) {
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 800
+			},	
+			legend: {
+				position: "bottom"
+			},
+			series: [{
+        type: "bar",
+				field: 0,
+				opacity: 0
+			}, 	{
+        type: "line",
+				field: "median_2021",
+        opacity: 0,
+				color: "goldenrod",
+        markers: {
+          visible: true,
+          background: "goldenrod",
+          size: 10
+        },
+			tooltip: {
+				visible: true,
+        background: "goldenrod",
+				template: "#= category # (2021): #= value.toPrecision(2) # per person notified as a TB case"
+			}
+			},  {
+        type: "line",
+				field: "median_2022",
+        opacity: 0,
+				color: color,
+        markers: {
+          visible: true,
+          background: color,
+          size: 10
+        },
+			tooltip: {
+				visible: true,
+        background: color,
+				template: "#= category # (2022): #= value.toPrecision(2) # per person notified as a TB case"
+			}
+			}, {
+        type: "line",
+				name: "2021",
+				color: "goldenrod"
+			},{
+        type: "line",
+				name: "2022",
+				color: color
+			},
+              ],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Number"
+				},
+				line: {
+					visible: false
+				},
+			},
+			categoryAxis: {
+				field: "entity",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: true
+				}
+			}
+
+		});
+}
+```
+
+```{js, echo=FALSE}
+
+
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function () {
+                 createFig_2_2_1("#fig_2_2_1_global",fig_2_2_1_data,"Global",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                 createFig_2_2_1("#fig_2_2_1_euro",fig_2_2_1_data,"European Region",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                 createFig_2_2_1("#fig_2_2_1_afro",fig_2_2_1_data,"African Region",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                  createFig_2_2_1("#fig_2_2_1_emro",fig_2_2_1_data,"Eastern Mediterranean Region",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                  createFig_2_2_1("#fig_2_2_1_amro",fig_2_2_1_data,"Region of the Americas",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                  createFig_2_2_1("#fig_2_2_1_wpro",fig_2_2_1_data,"Western Pacific Region",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                  createFig_2_2_1("#fig_2_2_1_searo",fig_2_2_1_data,"South-East Asia Region",true,true,"#2e8b57","Percentage\nbacterioloically confirmed");
+                  createFig_2_2_1("#fig_2_2_12_global",fig_2_2_12_data,"Global",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                 createFig_2_2_1("#fig_2_2_12_euro",fig_2_2_12_data,"European Region",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                 createFig_2_2_1("#fig_2_2_12_afro",fig_2_2_12_data,"African Region",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                  createFig_2_2_1("#fig_2_2_12_emro",fig_2_2_12_data,"Eastern Mediterranean Region",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                  createFig_2_2_1("#fig_2_2_12_amro",fig_2_2_12_data,"Region of the Americas",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                  createFig_2_2_1("#fig_2_2_12_wpro",fig_2_2_12_data,"Western Pacific Region",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                  createFig_2_2_1("#fig_2_2_12_searo",fig_2_2_12_data,"South-East Asia Region",true,true,"#FA4871","Percentage\nwith documented HIV status");
+                  createFig_2_2_1("#fig_2_2_14_global",fig_2_2_14_data,"Global",true,true,"#e52000","Percentage tested");
+                 createFig_2_2_1("#fig_2_2_14_euro",fig_2_2_14_data,"European Region",true,true,"#e52000","Percentage tested");
+                 createFig_2_2_1("#fig_2_2_14_afro",fig_2_2_14_data,"African Region",true,true,"#e52000","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_14_emro",fig_2_2_14_data,"Eastern Mediterranean Region",true,true,"#e52000","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_14_amro",fig_2_2_14_data,"Region of the Americas",true,true,"#e52000","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_14_wpro",fig_2_2_14_data,"Western Pacific Region",true,true,"#e52000","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_14_searo",fig_2_2_14_data,"South-East Asia Region",true,true,"#e52000","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_16_global",fig_2_2_16_data,"Global",true,true,"#277abe","Percentage tested");
+                 createFig_2_2_1("#fig_2_2_16_euro",fig_2_2_16_data,"European Region",true,true,"#277abe","Percentage tested");
+                 createFig_2_2_1("#fig_2_2_16_afro",fig_2_2_16_data,"African Region",true,true,"#277abe","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_16_emro",fig_2_2_16_data,"Eastern Mediterranean Region",true,true,"#277abe","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_16_amro",fig_2_2_16_data,"Region of the Americas",true,true,"#277abe","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_16_wpro",fig_2_2_16_data,"Western Pacific Region",true,true,"#277abe","Percentage tested");
+                  createFig_2_2_1("#fig_2_2_16_searo",fig_2_2_16_data,"South-East Asia Region",true,true,"#277abe","Percentage tested");
+                  createFig_2_2_3();
+                 createFig_2_2_4("#fig_2_2_4_AGO",fig_2_2_4_data,"Angola",true,true);
+                 createFig_2_2_4("#fig_2_2_4_COG",fig_2_2_4_data,"Congo",true,true);
+                 createFig_2_2_4("#fig_2_2_4_IND",fig_2_2_4_data,"India",true,true);
+                 createFig_2_2_4("#fig_2_2_4_MNG",fig_2_2_4_data,"Mongolia",true,true);
+                 createFig_2_2_4("#fig_2_2_4_PAK",fig_2_2_4_data,"Pakistan",true,true);
+                 createFig_2_2_4("#fig_2_2_4_THA",fig_2_2_4_data,"Thailand",true,true);
+                 createFig_2_2_4("#fig_2_2_4_BGD",fig_2_2_4_data,"Bangladesh",true,true);
+                 createFig_2_2_4("#fig_2_2_4_PRK",fig_2_2_4_data,"Democratic People's Republic of Korea",true,true);
+                 createFig_2_2_4("#fig_2_2_4_IDN",fig_2_2_4_data,"Indonesia",true,true);
+                 createFig_2_2_4("#fig_2_2_4_MOZ",fig_2_2_4_data,"Mozambique",true,true);
+                 createFig_2_2_4("#fig_2_2_4_PNG",fig_2_2_4_data,"Papua New Guinea",true,true);
+                 createFig_2_2_4("#fig_2_2_4_UGA",fig_2_2_4_data,"Uganda",true,true);
+                 createFig_2_2_4("#fig_2_2_4_BRA",fig_2_2_4_data,"Brazil",true,true);
+                 createFig_2_2_4("#fig_2_2_4_COD",fig_2_2_4_data,"Democratic Republic of the Congo",true,true);
+                 createFig_2_2_4("#fig_2_2_4_KEN",fig_2_2_4_data,"Kenya",true,true);
+                 createFig_2_2_4("#fig_2_2_4_MMR",fig_2_2_4_data,"Myanmar",true,true);
+                 createFig_2_2_4("#fig_2_2_4_PHL",fig_2_2_4_data,"Philippines",true,true);
+                 createFig_2_2_4("#fig_2_2_4_TZA",fig_2_2_4_data,"United Republic of Tanzania",true,true);
+                 createFig_2_2_4("#fig_2_2_4_CAF",fig_2_2_4_data,"Central African Republic",true,true);
+                 createFig_2_2_4("#fig_2_2_4_ETH",fig_2_2_4_data,"Ethiopia",true,true);
+                 createFig_2_2_4("#fig_2_2_4_LSO",fig_2_2_4_data,"Lesotho",true,true);
+                 createFig_2_2_4("#fig_2_2_4_NAM",fig_2_2_4_data,"Namibia",true,true);
+                 createFig_2_2_4("#fig_2_2_4_SLE",fig_2_2_4_data,"Sierra Leone",true,true);
+                 createFig_2_2_4("#fig_2_2_4_VNM",fig_2_2_4_data,"Viet Nam",true,true);
+                 createFig_2_2_4("#fig_2_2_4_CHN",fig_2_2_4_data,"China",true,true);
+                 createFig_2_2_4("#fig_2_2_4_GAB",fig_2_2_4_data,"Gabon",true,true);
+                 createFig_2_2_4("#fig_2_2_4_LBR",fig_2_2_4_data,"Liberia",true,true);
+                 createFig_2_2_4("#fig_2_2_4_NGA",fig_2_2_4_data,"Nigeria",true,true);
+                 createFig_2_2_4("#fig_2_2_4_ZAF",fig_2_2_4_data,"South Africa",true,true);
+                 createFig_2_2_4("#fig_2_2_4_ZMB",fig_2_2_4_data,"Zambia",true,true);
+                 createFig_2_2_9("#fig_2_2_9",fig_2_2_9_data,"dodgerblue");
+                 createFig_2_2_10("#fig_2_2_10",fig_2_2_10_data,"limegreen");
+                 createFig_2_2_11("#fig_2_2_11",fig_2_2_11_data,"blueviolet");
+
+                 createFig_2_2_7("#fig_2_2_5",fig_2_2_5_data,"Global",true,true,500);
+                 createFig_2_2_7("#fig_2_2_5_euro",fig_2_2_5_data,"European Region",true,true,250);
+                 createFig_2_2_7("#fig_2_2_5_afro",fig_2_2_5_data,"African Region",true,true,250);
+                 createFig_2_2_7("#fig_2_2_5_emro",fig_2_2_5_data,"Eastern Mediterranean Region",true,true,250);
+                 createFig_2_2_7("#fig_2_2_5_amro",fig_2_2_5_data,"Region of the Americas",true,true,250);
+                 createFig_2_2_7("#fig_2_2_5_wpro",fig_2_2_5_data,"Western Pacific Region",true,true,250);
+                 createFig_2_2_7("#fig_2_2_5_searo",fig_2_2_5_data,"South-East Asia Region",true,true,250);
+
+                 createFig_2_2_7("#fig_2_2_7_AGO",fig_2_2_7_data,"Angola",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_COG",fig_2_2_7_data,"Congo",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_IND",fig_2_2_7_data,"India",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_MNG",fig_2_2_7_data,"Mongolia",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_PAK",fig_2_2_7_data,"Pakistan",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_THA",fig_2_2_7_data,"Thailand",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_BGD",fig_2_2_7_data,"Bangladesh",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_PRK",fig_2_2_7_data,"Democratic People's Republic of Korea",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_IDN",fig_2_2_7_data,"Indonesia",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_MOZ",fig_2_2_7_data,"Mozambique",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_PNG",fig_2_2_7_data,"Papua New Guinea",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_UGA",fig_2_2_7_data,"Uganda",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_BRA",fig_2_2_7_data,"Brazil",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_COD",fig_2_2_7_data,"Democratic Republic of the Congo",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_KEN",fig_2_2_7_data,"Kenya",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_MMR",fig_2_2_7_data,"Myanmar",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_PHL",fig_2_2_7_data,"Philippines",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_TZA",fig_2_2_7_data,"United Republic of Tanzania",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_CAF",fig_2_2_7_data,"Central African Republic",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_ETH",fig_2_2_7_data,"Ethiopia",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_LSO",fig_2_2_7_data,"Lesotho",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_NAM",fig_2_2_7_data,"Namibia",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_SLE",fig_2_2_7_data,"Sierra Leone",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_VNM",fig_2_2_7_data,"Viet Nam",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_CHN",fig_2_2_7_data,"China",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_GAB",fig_2_2_7_data,"Gabon",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_LBR",fig_2_2_7_data,"Liberia",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_NGA",fig_2_2_7_data,"Nigeria",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_ZAF",fig_2_2_7_data,"South Africa",true,true,250);
+                 createFig_2_2_7("#fig_2_2_7_ZMB",fig_2_2_7_data,"Zambia",true,true,250);
+
+});  
+  
+```

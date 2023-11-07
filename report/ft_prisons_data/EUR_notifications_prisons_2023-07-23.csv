@@ -1,0 +1,498 @@
+country,iso2,g_whoregion,year,pris,rep_pris_prct,newrel_prisoners
+Albania,AL,EUR,2014,5200,100,4
+Albania,AL,EUR,2015,6000,100,0
+Albania,AL,EUR,2016,6100,100,3
+Albania,AL,EUR,2017,6000,100,8
+Albania,AL,EUR,2018,6000,100,3
+Albania,AL,EUR,2019,6200,100,6
+Albania,AL,EUR,2020,,,
+Albania,AL,EUR,2021,,,
+Albania,AL,EUR,2022,6200,100,1
+Andorra,AD,EUR,2014,,100,0
+Andorra,AD,EUR,2015,,100,0
+Andorra,AD,EUR,2016,,100,0
+Andorra,AD,EUR,2017,,100,0
+Andorra,AD,EUR,2018,,100,0
+Andorra,AD,EUR,2019,,100,0
+Andorra,AD,EUR,2020,,100,0
+Andorra,AD,EUR,2021,,100,0
+Andorra,AD,EUR,2022,0,100,0
+Armenia,AM,EUR,2014,,100,26
+Armenia,AM,EUR,2015,,100,20
+Armenia,AM,EUR,2016,,100,9
+Armenia,AM,EUR,2017,,100,16
+Armenia,AM,EUR,2018,,100,14
+Armenia,AM,EUR,2019,2626,,2
+Armenia,AM,EUR,2020,2003,100,3
+Armenia,AM,EUR,2021,2023,100,11
+Armenia,AM,EUR,2022,2407,100,2
+Austria,AT,EUR,2014,,,
+Austria,AT,EUR,2015,,,
+Austria,AT,EUR,2016,,,
+Austria,AT,EUR,2017,,,
+Austria,AT,EUR,2018,,,
+Austria,AT,EUR,2019,,,
+Austria,AT,EUR,2020,,,
+Austria,AT,EUR,2021,,,
+Austria,AT,EUR,2022,,,
+Azerbaijan,AZ,EUR,2014,18861,100,298
+Azerbaijan,AZ,EUR,2015,20434,100,228
+Azerbaijan,AZ,EUR,2016,20860,100,254
+Azerbaijan,AZ,EUR,2017,20213,100,256
+Azerbaijan,AZ,EUR,2018,19322,100,216
+Azerbaijan,AZ,EUR,2019,18354,100,204
+Azerbaijan,AZ,EUR,2020,19377,100,134
+Azerbaijan,AZ,EUR,2021,21839,100,147
+Azerbaijan,AZ,EUR,2022,23820,100,158
+Belarus,BY,EUR,2014,,,
+Belarus,BY,EUR,2015,,100,107
+Belarus,BY,EUR,2016,,100,121
+Belarus,BY,EUR,2017,,100,97
+Belarus,BY,EUR,2018,,100,106
+Belarus,BY,EUR,2019,,100,60
+Belarus,BY,EUR,2020,,100,30
+Belarus,BY,EUR,2021,,100,38
+Belarus,BY,EUR,2022,,100,35
+Belgium,BE,EUR,2014,11769,100,35
+Belgium,BE,EUR,2015,10981,100,12
+Belgium,BE,EUR,2016,11769,100,19
+Belgium,BE,EUR,2017,10619,100,20
+Belgium,BE,EUR,2018,10619,100,17
+Belgium,BE,EUR,2019,10471,100,19
+Belgium,BE,EUR,2020,10559,100,11
+Belgium,BE,EUR,2021,10599,100,20
+Belgium,BE,EUR,2022,,,
+Bosnia and Herzegovina,BA,EUR,2014,3042,100,2
+Bosnia and Herzegovina,BA,EUR,2015,3357,100,4
+Bosnia and Herzegovina,BA,EUR,2016,,,
+Bosnia and Herzegovina,BA,EUR,2017,,,
+Bosnia and Herzegovina,BA,EUR,2018,,,0
+Bosnia and Herzegovina,BA,EUR,2019,0,,
+Bosnia and Herzegovina,BA,EUR,2020,,,
+Bosnia and Herzegovina,BA,EUR,2021,,,
+Bosnia and Herzegovina,BA,EUR,2022,,,
+Bulgaria,BG,EUR,2014,8530,100,51
+Bulgaria,BG,EUR,2015,7640,100,20
+Bulgaria,BG,EUR,2016,7921,100,22
+Bulgaria,BG,EUR,2017,7262,100,16
+Bulgaria,BG,EUR,2018,6977,100,16
+Bulgaria,BG,EUR,2019,6637,100,7
+Bulgaria,BG,EUR,2020,6436,100,6
+Bulgaria,BG,EUR,2021,6192,100,5
+Bulgaria,BG,EUR,2022,5746,100,8
+Croatia,HR,EUR,2014,4352,100,5
+Croatia,HR,EUR,2015,,,
+Croatia,HR,EUR,2016,,,0
+Croatia,HR,EUR,2017,,,
+Croatia,HR,EUR,2018,,,
+Croatia,HR,EUR,2019,,,
+Croatia,HR,EUR,2020,,,
+Croatia,HR,EUR,2021,,,
+Croatia,HR,EUR,2022,,,
+Cyprus,CY,EUR,2014,,,
+Cyprus,CY,EUR,2015,,,
+Cyprus,CY,EUR,2016,,,
+Cyprus,CY,EUR,2017,,,
+Cyprus,CY,EUR,2018,,,
+Cyprus,CY,EUR,2019,,,
+Cyprus,CY,EUR,2020,,,
+Cyprus,CY,EUR,2021,,,
+Cyprus,CY,EUR,2022,,,
+Czech Republic,CZ,EUR,2014,18658,100,16
+Czech Republic,CZ,EUR,2015,20866,100,19
+Czech Republic,CZ,EUR,2016,22481,100,14
+Czechia,CZ,EUR,2017,22159,100,25
+Czechia,CZ,EUR,2018,21577,100,22
+Czechia,CZ,EUR,2019,21048,100,8
+Czechia,CZ,EUR,2020,19286,100,4
+Czechia,CZ,EUR,2021,18748,100,3
+Czechia,CZ,EUR,2022,19052,100,13
+Denmark,DK,EUR,2014,,,
+Denmark,DK,EUR,2015,,,
+Denmark,DK,EUR,2016,,,
+Denmark,DK,EUR,2017,,,
+Denmark,DK,EUR,2018,,,
+Denmark,DK,EUR,2019,,,2
+Denmark,DK,EUR,2020,,,
+Denmark,DK,EUR,2021,,,
+Denmark,DK,EUR,2022,,,
+Estonia,EE,EUR,2014,3300,100,6
+Estonia,EE,EUR,2015,3034,100,9
+Estonia,EE,EUR,2016,2841,100,8
+Estonia,EE,EUR,2017,2800,100,3
+Estonia,EE,EUR,2018,2500,100,5
+Estonia,EE,EUR,2019,2500,100,2
+Estonia,EE,EUR,2020,2500,100,3
+Estonia,EE,EUR,2021,2265,100,2
+Estonia,EE,EUR,2022,2600,100,3
+Faroe Islands,FO,EUR,2021,,,
+Faroe Islands,FO,EUR,2022,,,
+Finland,FI,EUR,2014,,,
+Finland,FI,EUR,2015,,,
+Finland,FI,EUR,2016,,,
+Finland,FI,EUR,2017,,,
+Finland,FI,EUR,2018,,,
+Finland,FI,EUR,2019,,,
+Finland,FI,EUR,2020,,,
+Finland,FI,EUR,2021,,,
+Finland,FI,EUR,2022,,,
+France,FR,EUR,2014,,,
+France,FR,EUR,2015,66818,,61
+France,FR,EUR,2016,66474,,65
+France,FR,EUR,2017,68311,100,65
+France,FR,EUR,2018,69304,100,67
+France,FR,EUR,2019,,,
+France,FR,EUR,2020,70651,100,41
+France,FR,EUR,2021,64405,100,41
+France,FR,EUR,2022,69448,100,61
+Georgia,GE,EUR,2014,10372,100,101
+Georgia,GE,EUR,2015,9716,100,82
+Georgia,GE,EUR,2016,9334,100,57
+Georgia,GE,EUR,2017,9280,100,58
+Georgia,GE,EUR,2018,9083,100,43
+Georgia,GE,EUR,2019,10000,100,28
+Georgia,GE,EUR,2020,9143,100,28
+Georgia,GE,EUR,2021,9203,100,27
+Georgia,GE,EUR,2022,9542,100,20
+Germany,DE,EUR,2014,,,
+Germany,DE,EUR,2015,,,
+Germany,DE,EUR,2016,,,
+Germany,DE,EUR,2017,,,
+Germany,DE,EUR,2018,,,
+Germany,DE,EUR,2019,,,
+Germany,DE,EUR,2020,,,
+Germany,DE,EUR,2021,,,
+Germany,DE,EUR,2022,,,
+Greece,GR,EUR,2014,,,
+Greece,GR,EUR,2015,,,
+Greece,GR,EUR,2016,,,
+Greece,GR,EUR,2017,,,
+Greece,GR,EUR,2018,,,17
+Greece,GR,EUR,2019,,,
+Greece,GR,EUR,2020,,,
+Greece,GR,EUR,2021,,,
+Greece,GR,EUR,2022,,,
+Greenland,GL,EUR,2014,,,
+Greenland,GL,EUR,2015,,,
+Greenland,GL,EUR,2016,,,
+Greenland,GL,EUR,2017,,,
+Greenland,GL,EUR,2018,,,
+Greenland,GL,EUR,2019,,,
+Greenland,GL,EUR,2020,,,
+Greenland,GL,EUR,2021,,,
+Greenland,GL,EUR,2022,,,
+Hungary,HU,EUR,2014,21000,100,10
+Hungary,HU,EUR,2015,,,
+Hungary,HU,EUR,2016,19000,100,9
+Hungary,HU,EUR,2017,,,
+Hungary,HU,EUR,2018,,100,15
+Hungary,HU,EUR,2019,,100,11
+Hungary,HU,EUR,2020,,,
+Hungary,HU,EUR,2021,18623,100,2
+Hungary,HU,EUR,2022,,100,5
+Iceland,IS,EUR,2014,0,100,0
+Iceland,IS,EUR,2015,,,
+Iceland,IS,EUR,2016,,,
+Iceland,IS,EUR,2017,,,
+Iceland,IS,EUR,2018,,,
+Iceland,IS,EUR,2019,,,
+Iceland,IS,EUR,2020,,,
+Iceland,IS,EUR,2021,,,
+Iceland,IS,EUR,2022,,,
+Ireland,IE,EUR,2014,13408,100,5
+Ireland,IE,EUR,2015,14182,100,0
+Ireland,IE,EUR,2016,12579,100,0
+Ireland,IE,EUR,2017,7484,100,0
+Ireland,IE,EUR,2018,6490,100,0
+Ireland,IE,EUR,2019,7170,100,0
+Ireland,IE,EUR,2020,6490,100,0
+Ireland,IE,EUR,2021,6133,100,1
+Ireland,IE,EUR,2022,5801,100,2
+Israel,IL,EUR,2014,20780,100,5
+Israel,IL,EUR,2015,20245,100,2
+Israel,IL,EUR,2016,,,
+Israel,IL,EUR,2017,,,
+Israel,IL,EUR,2018,,,
+Israel,IL,EUR,2019,,,
+Israel,IL,EUR,2020,,,
+Israel,IL,EUR,2021,,,
+Israel,IL,EUR,2022,,,
+Italy,IT,EUR,2014,,,
+Italy,IT,EUR,2015,,,
+Italy,IT,EUR,2016,,,
+Italy,IT,EUR,2017,,,
+Italy,IT,EUR,2018,,,
+Italy,IT,EUR,2019,,,
+Italy,IT,EUR,2020,,,
+Italy,IT,EUR,2021,,,
+Italy,IT,EUR,2022,,,
+Kazakhstan,KZ,EUR,2014,51792,6,962
+Kazakhstan,KZ,EUR,2015,50048,100,583
+Kazakhstan,KZ,EUR,2016,,,
+Kazakhstan,KZ,EUR,2017,35000,,386
+Kazakhstan,KZ,EUR,2018,35219,,353
+Kazakhstan,KZ,EUR,2019,,,243
+Kazakhstan,KZ,EUR,2020,32000,,199
+Kazakhstan,KZ,EUR,2021,34000,100,204
+Kazakhstan,KZ,EUR,2022,34000,100,142
+Kosovo,XA,EUR,2014,,,22
+Kosovo,XA,EUR,2015,1500,100,4
+Kosovo,XA,EUR,2016,1572,100,1
+Kosovo,XA,EUR,2017,0,100,0
+Kosovo,XA,EUR,2018,3842,100,2
+Kosovo,XA,EUR,2019,1,100,1
+Kosovo,XA,EUR,2020,0,100,0
+Kosovo,XA,EUR,2021,3,,3
+Kosovo,XA,EUR,2022,,,
+Kyrgyzstan,KG,EUR,2014,7544,100,157
+Kyrgyzstan,KG,EUR,2015,8162,100,248
+Kyrgyzstan,KG,EUR,2016,8300,100,216
+Kyrgyzstan,KG,EUR,2017,8889,100,199
+Kyrgyzstan,KG,EUR,2018,8624,8,140
+Kyrgyzstan,KG,EUR,2019,7260,8,164
+Kyrgyzstan,KG,EUR,2020,,,53
+Kyrgyzstan,KG,EUR,2021,6565,1,74
+Kyrgyzstan,KG,EUR,2022,6750,100,31
+Latvia,LV,EUR,2014,,100,53
+Latvia,LV,EUR,2015,4409,100,33
+Latvia,LV,EUR,2016,4243,100,32
+Latvia,LV,EUR,2017,3765,100,21
+Latvia,LV,EUR,2018,,,
+Latvia,LV,EUR,2019,15,15,
+Latvia,LV,EUR,2020,,,
+Latvia,LV,EUR,2021,3183,100,10
+Latvia,LV,EUR,2022,,1,5
+Lithuania,LT,EUR,2014,8636,100,57
+Lithuania,LT,EUR,2015,7355,100,41
+Lithuania,LT,EUR,2016,6815,100,35
+Lithuania,LT,EUR,2017,6599,100,54
+Lithuania,LT,EUR,2018,6400,100,46
+Lithuania,LT,EUR,2019,8776,100,18
+Lithuania,LT,EUR,2020,5121,100,22
+Lithuania,LT,EUR,2021,4425,100,16
+Lithuania,LT,EUR,2022,,,
+Luxembourg,LU,EUR,2014,700,100,1
+Luxembourg,LU,EUR,2015,700,100,0
+Luxembourg,LU,EUR,2016,700,100,0
+Luxembourg,LU,EUR,2017,700,100,0
+Luxembourg,LU,EUR,2018,750,100,0
+Luxembourg,LU,EUR,2019,750,100,1
+Luxembourg,LU,EUR,2020,750,100,1
+Luxembourg,LU,EUR,2021,750,100,0
+Luxembourg,LU,EUR,2022,750,100,2
+Malta,MT,EUR,2014,,100,0
+Malta,MT,EUR,2015,,100,0
+Malta,MT,EUR,2016,,100,0
+Malta,MT,EUR,2017,,100,0
+Malta,MT,EUR,2018,,100,0
+Malta,MT,EUR,2019,,100,0
+Malta,MT,EUR,2020,,100,0
+Malta,MT,EUR,2021,,100,0
+Malta,MT,EUR,2022,,100,0
+Monaco,MC,EUR,2014,,100,0
+Monaco,MC,EUR,2015,158,100,0
+Monaco,MC,EUR,2016,,,
+Monaco,MC,EUR,2017,,,
+Monaco,MC,EUR,2018,,,
+Monaco,MC,EUR,2019,,,
+Monaco,MC,EUR,2020,,,
+Monaco,MC,EUR,2021,,,
+Monaco,MC,EUR,2022,,,
+Montenegro,ME,EUR,2014,1557,100,1
+Montenegro,ME,EUR,2015,1340,100,1
+Montenegro,ME,EUR,2016,,,
+Montenegro,ME,EUR,2017,,,
+Montenegro,ME,EUR,2018,,,
+Montenegro,ME,EUR,2019,,,1
+Montenegro,ME,EUR,2020,,,1
+Montenegro,ME,EUR,2021,,,
+Montenegro,ME,EUR,2022,,,
+Netherlands,NL,EUR,2014,43000,100,16
+Netherlands,NL,EUR,2015,43000,100,5
+Netherlands,NL,EUR,2016,37166,100,14
+Netherlands,NL,EUR,2017,27951,100,19
+Netherlands,NL,EUR,2018,29149,100,7
+Netherlands,NL,EUR,2019,31456,100,23
+Netherlands,NL,EUR,2020,24092,100,6
+Netherlands (Kingdom of the),NL,EUR,2021,23341,100,5
+Netherlands (Kingdom of the),NL,EUR,2022,24152,100,3
+North Macedonia,MK,EUR,2018,3000,100,3
+North Macedonia,MK,EUR,2019,2600,100,2
+North Macedonia,MK,EUR,2020,2600,100,3
+North Macedonia,MK,EUR,2021,2600,100,4
+North Macedonia,MK,EUR,2022,,,6
+Norway,NO,EUR,2014,,,
+Norway,NO,EUR,2015,,,
+Norway,NO,EUR,2016,,,
+Norway,NO,EUR,2017,,,
+Norway,NO,EUR,2018,,,
+Norway,NO,EUR,2019,0,,0
+Norway,NO,EUR,2020,,,
+Norway,NO,EUR,2021,,,
+Norway,NO,EUR,2022,,,
+Poland,PL,EUR,2014,78987,100,152
+Poland,PL,EUR,2015,78814,100,172
+Poland,PL,EUR,2016,71456,100,216
+Poland,PL,EUR,2017,73807,100,170
+Poland,PL,EUR,2018,74077,100,171
+Poland,PL,EUR,2019,74564,100,160
+Poland,PL,EUR,2020,70716,100,112
+Poland,PL,EUR,2021,71209,100,119
+Poland,PL,EUR,2022,72513,100,124
+Portugal,PT,EUR,2014,14003,100,53
+Portugal,PT,EUR,2015,14222,100,60
+Portugal,PT,EUR,2016,13779,100,36
+Portugal,PT,EUR,2017,13465,100,32
+Portugal,PT,EUR,2018,12611,100,44
+Portugal,PT,EUR,2019,12793,100,40
+Portugal,PT,EUR,2020,11412,100,24
+Portugal,PT,EUR,2021,11388,100,20
+Portugal,PT,EUR,2022,12198,100,23
+Republic of Moldova,MD,EUR,2014,,98,121
+Republic of Moldova,MD,EUR,2015,,98,124
+Republic of Moldova,MD,EUR,2016,7762,82,173
+Republic of Moldova,MD,EUR,2017,7762,100,99
+Republic of Moldova,MD,EUR,2018,7635,100,89
+Republic of Moldova,MD,EUR,2019,6722,100,84
+Republic of Moldova,MD,EUR,2020,6429,100,71
+Republic of Moldova,MD,EUR,2021,6396,100,79
+Republic of Moldova,MD,EUR,2022,6396,100,79
+Romania,RO,EUR,2014,29899,100,209
+Romania,RO,EUR,2015,28354,100,161
+Romania,RO,EUR,2016,27114,100,157
+Romania,RO,EUR,2017,22532,100,105
+Romania,RO,EUR,2018,20602,100,114
+Romania,RO,EUR,2019,20114,100,109
+Romania,RO,EUR,2020,22700,100,74
+Romania,RO,EUR,2021,23387,100,97
+Romania,RO,EUR,2022,23310,100,97
+Russian Federation,RU,EUR,2014,672066,100,11315
+Russian Federation,RU,EUR,2015,672066,100,10372
+Russian Federation,RU,EUR,2016,639042,100,9610
+Russian Federation,RU,EUR,2017,611266,100,8166
+Russian Federation,RU,EUR,2018,578810,100,7291
+Russian Federation,RU,EUR,2019,539618,100,6555
+Russian Federation,RU,EUR,2020,499659,100,5442
+Russian Federation,RU,EUR,2021,473129,100,4832
+Russian Federation,RU,EUR,2022,446835,100,4657
+San Marino,SM,EUR,2014,,,
+San Marino,SM,EUR,2015,,,
+San Marino,SM,EUR,2016,10,100,0
+San Marino,SM,EUR,2017,,,
+San Marino,SM,EUR,2018,,,
+San Marino,SM,EUR,2019,,,
+San Marino,SM,EUR,2020,,,
+San Marino,SM,EUR,2021,,,
+San Marino,SM,EUR,2022,,,
+Serbia,RS,EUR,2014,30000,100,15
+Serbia,RS,EUR,2015,,100,15
+Serbia,RS,EUR,2016,,100,11
+Serbia,RS,EUR,2017,30000,100,8
+Serbia,RS,EUR,2018,30000,100,4
+Serbia,RS,EUR,2019,30000,100,2
+Serbia,RS,EUR,2020,,,
+Serbia,RS,EUR,2021,,,
+Serbia,RS,EUR,2022,34200,100,0
+Slovakia,SK,EUR,2014,7386,100,21
+Slovakia,SK,EUR,2015,8105,100,17
+Slovakia,SK,EUR,2016,8023,100,17
+Slovakia,SK,EUR,2017,8211,100,18
+Slovakia,SK,EUR,2018,7845,100,16
+Slovakia,SK,EUR,2019,7876,100,6
+Slovakia,SK,EUR,2020,10372,100,3
+Slovakia,SK,EUR,2021,8750,100,3
+Slovakia,SK,EUR,2022,8800,100,3
+Slovenia,SI,EUR,2014,4841,100,0
+Slovenia,SI,EUR,2015,4083,100,0
+Slovenia,SI,EUR,2016,3730,100,0
+Slovenia,SI,EUR,2017,,,
+Slovenia,SI,EUR,2018,,,
+Slovenia,SI,EUR,2019,4060,100,0
+Slovenia,SI,EUR,2020,3571,100,0
+Slovenia,SI,EUR,2021,3277,100,0
+Slovenia,SI,EUR,2022,3490,100,0
+Spain,ES,EUR,2014,,,
+Spain,ES,EUR,2015,,,
+Spain,ES,EUR,2016,,,
+Spain,ES,EUR,2017,,,
+Spain,ES,EUR,2018,,,
+Spain,ES,EUR,2019,,,
+Spain,ES,EUR,2020,,,
+Spain,ES,EUR,2021,,,
+Spain,ES,EUR,2022,,,
+Sweden,SE,EUR,2014,,,
+Sweden,SE,EUR,2015,,,
+Sweden,SE,EUR,2016,,,
+Sweden,SE,EUR,2017,,,
+Sweden,SE,EUR,2018,,,
+Sweden,SE,EUR,2019,,,
+Sweden,SE,EUR,2020,,,
+Sweden,SE,EUR,2021,,,
+Sweden,SE,EUR,2022,,,
+Switzerland,CH,EUR,2014,,,
+Switzerland,CH,EUR,2015,6884,,4
+Switzerland,CH,EUR,2016,,,
+Switzerland,CH,EUR,2017,,,
+Switzerland,CH,EUR,2018,,,
+Switzerland,CH,EUR,2019,0,,
+Switzerland,CH,EUR,2020,,,
+Switzerland,CH,EUR,2021,,,
+Switzerland,CH,EUR,2022,,,
+Tajikistan,TJ,EUR,2014,10000,100,130
+Tajikistan,TJ,EUR,2015,10000,100,90
+Tajikistan,TJ,EUR,2016,10000,100,99
+Tajikistan,TJ,EUR,2017,13500,100,101
+Tajikistan,TJ,EUR,2018,15000,100,121
+Tajikistan,TJ,EUR,2019,13000,100,106
+Tajikistan,TJ,EUR,2020,13000,100,68
+Tajikistan,TJ,EUR,2021,12000,100,50
+Tajikistan,TJ,EUR,2022,12000,100,70
+The Former Yugoslav Republic of Macedonia,MK,EUR,2014,2600,100,4
+The Former Yugoslav Republic of Macedonia,MK,EUR,2015,2700,100,4
+The Former Yugoslav Republic of Macedonia,MK,EUR,2016,2700,100,3
+The Former Yugoslav Republic of Macedonia,MK,EUR,2017,3087,100,10
+Turkey,TR,EUR,2014,158837,100,142
+Turkey,TR,EUR,2015,178056,100,137
+Turkey,TR,EUR,2016,200600,100,151
+Turkey,TR,EUR,2017,232182,100,125
+Turkey,TR,EUR,2018,280395,100,155
+Turkey,TR,EUR,2019,291546,100,188
+Turkey,TR,EUR,2020,266831,100,118
+Türkiye,TR,EUR,2021,297726,100,95
+Türkiye,TR,EUR,2022,340793,100,156
+Turkmenistan,TM,EUR,2014,,,
+Turkmenistan,TM,EUR,2015,,,
+Turkmenistan,TM,EUR,2016,,,
+Turkmenistan,TM,EUR,2017,,,
+Turkmenistan,TM,EUR,2018,,,
+Turkmenistan,TM,EUR,2019,,,
+Turkmenistan,TM,EUR,2020,,,
+Turkmenistan,TM,EUR,2021,,,
+Turkmenistan,TM,EUR,2022,,,
+Ukraine,UA,EUR,2014,73431,100,1456
+Ukraine,UA,EUR,2015,62749,100,1177
+Ukraine,UA,EUR,2016,65398,100,919
+Ukraine,UA,EUR,2017,60876,100,744
+Ukraine,UA,EUR,2018,53853,100,767
+Ukraine,UA,EUR,2019,52440,100,722
+Ukraine,UA,EUR,2020,50183,100,555
+Ukraine,UA,EUR,2021,47848,100,547
+Ukraine,UA,EUR,2022,41810,100,362
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2014,128892,100,41
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2015,,,33
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2016,93097,100,27
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2017,92500,100,22
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2018,,,26
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2019,,,
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2020,,,
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2021,,,18
+United Kingdom of Great Britain and Northern Ireland,GB,EUR,2022,,,
+Uzbekistan,UZ,EUR,2014,,,
+Uzbekistan,UZ,EUR,2015,,,
+Uzbekistan,UZ,EUR,2016,,,
+Uzbekistan,UZ,EUR,2017,,,
+Uzbekistan,UZ,EUR,2018,,,
+Uzbekistan,UZ,EUR,2019,,,
+Uzbekistan,UZ,EUR,2020,,,
+Uzbekistan,UZ,EUR,2021,,,
+Uzbekistan,UZ,EUR,2022,,,

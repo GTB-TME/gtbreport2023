@@ -1,0 +1,453 @@
+--- 
+title: "Chapter 6" 
+author: "Irwin Law, and some reformatting by Hazim Timimi" 
+date: "`r Sys.Date()`" 
+time: "`r Sys.time()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Do not include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Do not write figure captions
+    fig_caption: FALSE
+    css: columns.css
+    # to save intermediate .png
+    keep_md: true    
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: False
+
+--- 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,  fig.align = "center"}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Clear the decks ----
+rm(list=ls())
+
+
+# Load packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+library(ggplot2)
+library(dplyr)
+library(gtbreport)
+library(here)
+
+library(jsonlite)
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ch6")
+save_csv = TRUE
+save_pdf = TRUE
+save_cairo = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+# 6. TB research and innovation
+
+
+_Draft! Prepared `r Sys.time()`` _
+
+Tuberculosis (TB) research and innovation is essential to achieve global TB targets for reductions in TB incidence and TB deaths. The targets of the WHO End TB Strategy (`r ref_lnk("1")`), adopted in 2014, required a global rate of decline in TB incidence of 17% per year between 2025 and 2035, compared with a baseline level of 2% per year in 2015. The rate of decline needed to reach 10% per year by 2025 - the fastest achieved at national level, historically. It was recognized that such an unprecedented rate of decline from 2025 would require a major technological breakthrough by 2025, such as a new TB vaccine that is effective both before and after exposure to infection (`r ref_lnk("2")`). For this reason, “Intensified research and innovation” is the third pillar of the End TB Strategy.  
+
+Building on the End TB Strategy, Member States adopted a Global Strategy for TB research and innovation in 2020 (`r ref_lnk("3")`). This calls for strong and sustained research efforts to accelerate the development of more accurate and affordable rapid point-of-care tests for diagnosing TB infection and TB disease and for detecting drug resistance; shorter, safer regimens for treating TB infection and TB disease, especially drug-resistant TB; a TB vaccine that is effective before and after exposure across a range of age groups; and strategies to optimally scale-up effective interventions.
+
+Between 2018 and 2022, research and development has resulted in changes to WHO guidelines for TB prevention, screening, diagnosis, and treatment. <a href="https://extranet.who.int/tbknowledge">New recommendations</a> include: shorter treatment regimens of 4 months for children and adults with drug-susceptible TB disease and 6 months for people aged 14 and above with rifampicin-resistant and multidrug-resistant TB (MDR/RR-TB) disease, as well as a new 6-month regimen for children and adolescents with TB meningitis; a regimen of one-month for TB preventive treatment; and new tests for TB infection and disease (`r ref_lnk("4")`). 
+
+The 2018 political declaration of the high-level meeting of the General Assembly on the fight against TB (`r ref_lnk("5")`) included the first globally-agreed funding target for TB research of US\$&nbsp;2 billion per year, for the period 2018–2022. The political declaration of the second UN high-level meeting on TB, held on 22 September 2023 (`r ref_lnk("6")`), has established an even more ambitious target: that funding should reach US\$&nbsp;5 billion annually by 2027.
+
+Although funding for TB research and innovation has been slowly increasing (`r lnk("Fig. 6.1")`), the latest published data show that only US$ 1 billion was available in 2021 (`r ref_lnk("7")`). In that year, most of the funding came from the public sector (70%), followed by philanthropy (14%), the private sector (10%), and multilateral agencies (6%). To close the funding gap, stakeholders, including governments, the biomedical industry, and other funders of healthcare research together with civil society, should consider testing and implementing innovative models of financing.
+
+<br />
+
+### <span style="color:#F21905">Fig. 6.1</span> Funding for TB research, 2015&#8211;2021
+<div class="subhead">The dashed line shows the target of US\$&nbsp;2 billion per year that was set at the UN high-level meeting on TB in 2018.</div>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,  fig.align = "left", fig.width=12}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Create figure 6.1
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# get the  data from here https://www.treatmentactiongroup.org/resources/tbrd-report/tbrd-report-2022/----
+#  just enter it here manually
+
+year <- c(2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022)
+
+research <- c(0.643, 0.675, 0.639, 0.686, 0.674, 0.621, 0.726, 0.772, 0.906, 0.901, 0.915, 1, NA)
+
+tb_research <- data.frame(year, research)
+f6.1_data <- tb_research
+
+# Plot research funding as a simple bar chart ----
+
+f6.1_plot <- tb_research %>%
+  
+  filter(year < 2022 & year >= 2015) %>%
+  
+  ggplot(aes(x=year, y=research)) +
+  
+  geom_bar(stat = "identity", fill = "lightblue") +
+  
+  scale_x_continuous(name="", breaks = c(2015, 2016, 2017, 2018, 2019, 2020, 2021)) +
+  
+  # display y-axis scale im millions
+  scale_y_continuous(name = "Billions (current US$)",
+                     limits = c(0,2.1)) +
+  
+  # add target funding of USD 2 billion as dashed horizontal line
+  geom_hline(yintercept = 2,
+             linetype="dashed",
+             color = "#222222",
+             size=1.5,
+             show.legend = TRUE) +
+  
+  annotate("text",
+           x = 2016, y = 1.9,
+           label = "Target set at UN high-level meeting on TB (2018)",
+           size = 4,
+           color = "#222222") +
+  theme_gtb()
+
+output_ggplot(f6.1_plot, f6.1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<br />
+<div id="fig_6_1"></div>
+
+<div class="footnote">Source: Treatment Action Group, Stop TB Partnership. Tuberculosis research funding trends 2005-2021. New York: Treatment Action Group; 2021 (https://www.treatmentactiongroup.org/resources/tbrd-report/tbrd-report-2022/)
+</left>
+</div>
+<br />
+
+WHO continues to promote and monitor progress in the development of new TB diagnostics, drugs and vaccines. 
+
+<h4><b>New diagnostics</b></h4>
+
+
+The diagnostic pipeline has expanded considerably in terms of the number of tests, products or methods in development (`r lnk("Table 6.1")`). These include molecular tests for the detection of TB disease and drug resistance, interferon-gamma release assays (IGRAs) for the detection of TB infection, biomarker-based assays for detection of TB infection and disease, computer-aided detection (CAD) for TB screening using digital chest radiography, and a new class of aerosol-capture technologies for detection of TB disease.
+
+<br />
+
+### <span style="color:#F21905">Table 6.1 </span>An overview of progress in the development of TB diagnostics, August 2023
+
+<mark>TABLE 6.1 WILL BE INSERTED DIRECTLY IN SITEFINITY. SEE WORD DOC FOR TABLE</mark>
+
+<br />
+
+In 2023, WHO convened a guideline development group to assess the use of targeted next-generation sequencing for detecting drug-resistant TB directly from sputum specimens, and issued a rapid communication to highlight the key findings (`r ref_lnk("8")`). This newly-recommended class of tests is a major step towards comprehensive drug susceptibility testing (DST). Data for three products were included in the assessment: Deeplex® Myc-TB (GenoScreen), NanoTB® (Oxford Nanopore Technologies), and TBseq® (ShengTing Biotech), although not all technologies met the class criteria for some drugs. 
+
+WHO plans to review evidence on nucleic acid amplification tests to detect TB, including use of alternative sample types and testing for resistance to drugs used to treat drug-susceptible TB, MDR/RR-TB, pre-XDR and XDR-TB, in the near future. Additional products under consideration for review include point-of-care tests (next-generation LF-LAM assays), near point-of-care molecular tests, culture-based DST, broth microdilution methods for DST, new IGRAs to test for TB infection and CAD for digital chest radiography in individuals under 15 years of age (as well as other use cases).
+
+
+<br />
+<h4><b>TB drug development</b></h4>
+
+In June 2023, WHO launched a new <a href="https://tbtrialtrack.who.int/#/">online platform</a> to track progress in the development of new TB drugs and vaccines, as well as operational research projects (`r ref_lnk("9")`). 
+
+As of August 2023, the tracker indicates that there were 28 drugs for the treatment of TB disease in Phase I, Phase II or Phase III trials. This is an increase from 26 in 2022 and eight in 2015. The 28 drugs comprise:
+
+ <ul>
+  <li>18 new chemical entities. These are BVL-GSK098, BTZ-043, delpazolid, GSK-286 (GSK 2556286), GSK-3036656, macozinone, OPC-167832, TBAJ-587, TBAJ-876, TBI-223, TBI-166, TBA-7371, telacebec-(Q203), sanfetrinem, SQ109, SPR720 (fobrepodacin), sutezolid, and sudapyridine (WX-081);</li>
+  <li>Two drugs that have received accelerated regulatory approval. These are bedaquiline and delamanid;</li>
+  <li>One drug that was recently approved by the United States (US) Food and Drug Administration under the limited population pathway for antibacterial and antifungal drugs. This is pretomanid, which is part of the newly-recommended 6-month regimen for MDR/RR-TB and pre-XDR-TB; </li>
+  <li>Seven repurposed drugs. These are clofazimine, levofloxacin, linezolid, moxifloxacin, rifampicin (high dose), rifapentine and tedizolid. </li>
+</ul> 
+
+Various combination regimens with new or repurposed drugs, as well as host-directed therapies, are also in Phase II or Phase III/IV trials or being evaluated as part of operational research projects.
+
+There are at least 29 clinical trials and implementation research studies to evaluate drug regimens and models of delivery for TB preventive treatment. Examples included a trial for the prevention of MDR-TB using delamanid, studies to assess how to optimize treatment administration in very young children and people with HIV, and trials of rifamycin monotherapies for durations of 6 or 8 weeks. 
+
+
+<br />
+<h4><b>TB vaccines</b></h4>
+
+
+As of August 2023, there were 16 vaccines in clinical development: four in Phase I, eight in Phase II and four in Phase III (`r lnk("Table 6.2")`). They include candidates to prevent TB infection and TB disease, and candidates to help improve the outcomes of treatment for TB disease.
+
+### <span style="color:#F21905">Table 6.2 </span>The global clinical development pipeline for new TB vaccines, August 2023 ^a^
+
+<style>
+table, th, td {
+  border: 1px solid black;
+}
+
+mark {
+  background-color: red;
+  color: black;
+}
+
+
+</style>
+
+<table class="res_table">
+  <tbody>
+    <tr>
+      <th style="background-color:#bddbed;">Phase I</th>
+      <th style="background-color:#92C4E1;">Phase IIa</th>
+      <th style="background-color:#83b0ca;">Phase IIb</th>
+      <th style="background-color:#749cb4;">Phase III</th>
+    </tr>
+    <tr>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT02337270" target="_blank" data-sf-ec-immutable=""><strong>AdHu5Ag85A</strong></a><sup>b</sup><br />McMaster, CanSino</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT03681860" target="_blank" data-sf-ec-immutable=""><strong>ChAdOx185A-MVA85A</strong></a><sup>b,j</sup><br />University of Oxford</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT04152161" target="_blank" data-sf-ec-immutable=""><strong>BCG revaccination to prevent infection</strong></a><sup>d,j</sup><br />Gates MRI</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT04975737" target="_blank" data-sf-ec-immutable=""><strong>GamTBvac</strong></a><sup>e</sup><br />Ministry of Health, Russian Federation</td>
+    </tr>
+    <tr>
+        <td><a href="https://clinicaltrials.gov/ct2/show/record/NCT05537038?term=BNT164&draw=2&rank=1&view=record" target="_blank" data-sf-ec-immutable=""><strong>BNT164a1</strong></a><sup>c</sup><br />
+            <a href="https://clinicaltrials.gov/ct2/show/record/NCT05537038?term=BNT164&draw=2&rank=1&view=record" target="_blank" data-sf-ec-immutable=""><strong>BNT164b1</strong></a><sup>c</sup><br />BioNtech SE</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT03806686" target="_blank" data-sf-ec-immutable=""><strong>ID93 + GLA-SE(QTP101)</strong></a><sup>e</sup><br />Quratis<br />U.S. NIH/NIAID</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT02712424" target="_blank" data-sf-ec-immutable=""><strong>DAR-901 booster</strong></a><sup>f,j</sup><br />Dartmouth, St. Louis University</td>
+        <td><a href="http://www.ctri.nic.in/Clinicaltrials/pdf_generate.php?trialid=27411&amp;EncHid=&amp;modid=&amp;compid=%27,%2727411det%27" target="_blank" data-sf-ec-immutable=""><strong>MIP/Immuvac</strong></a><sup>f,i,j</sup><br />ICMR, Cadila Pharmaceuticals</td>
+    </tr>
+    <tr>
+       <td><a href="https://clinicaltrials.gov/study/NCT05945498?intr=tB%2FFLU-05E%20&rank=1" target="_blank" data-sf-ec-immutable=""><strong>TB/FLU-05E</strong></a><sup>b</sup><br/>RIBSP</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT05284812" target="_blank" data-sf-ec-immutable=""><strong>AEC/BC02</strong></a><sup>e</sup><br />Anhui Zhifei Longcom</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT03512249" target="_blank" data-sf-ec-immutable=""><strong>H56: IC31</strong></a><sup>e</sup><br/>SSI, Valneva, IAVI</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT04975178" target="_blank" data-sf-ec-immutable=""><strong>MTBVAC</strong></a><sup>d,h</sup><br />Biofabri, University of Zaragoza, IAVI, TBVI</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT04556981" target="_blank" data-sf-ec-immutable=""><strong>M72/AS01E</strong></a><sup>e,j</sup><br />GSK, Gates MRI</td>
+        <td><a href="http://www.ctri.nic.in/Clinicaltrials/pdf_generate.php?trialid=27411&amp;EncHid=&amp;modid=&amp;compid=%27,%2727411det%27" target="_blank" data-sf-ec-immutable=""><strong>VPM1002</strong></a><sup>d,g,i,j</sup><br />SIIPL, VPM</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT04919239" target="_blank" data-sf-ec-immutable=""><strong>RUTI</strong></a><sup>&reg;f</sup><br />Archivel Farma, S.L.</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT04453293" target="_blank" data-sf-ec-immutable=""><strong>BCG vaccination to prevent infection (TIPI)</strong></a><sup>d</sup><br />HJF</td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><a href="https://clinicaltrials.gov/ct2/show/NCT05330884" target="_blank" data-sf-ec-immutable=""><strong>BCG revaccination in children and adolescents (BRiC)</strong></a><sup>d,i,j</sup><br />ICMR</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<div class="footnote">
+
+^a^ Information was self-reported by vaccine sponsors to the <a href="https://newtbvaccines.org/">Stop TB Partnership Working Group on New TB Vaccines</a>  or was identified through clinical trial registries or other public sources of information. <br>
+^b^ Viral vector.<br>
+^c^ Messenger RNA (mRNA).<br>
+^d^ Mycobacterial – live.<br>
+^e^ Protein/adjuvant.<br>
+^f^ Mycobacterial – whole cell or extract.<br>
+^g^ Other trials involving VPM1002 include <a href="https://classic.clinicaltrials.gov/ct2/show/NCT04351685">NCT04351685</a>, <a href="https://classic.clinicaltrials.gov/ct2/show/NCT03152903">NCT03152903</a>.<br>
+^h^ Includes infants (aged <12 months).<br>
+^i^ Includes children (aged <10 years).<br>
+^j^ Includes adolescents (aged 10–19 years).<br>
+</div>
+
+
+<br />
+<h4><b>Recent actions by WHO to support TB research and innovation</b></h4>
+
+Recognizing the critical role of TB vaccines to achieving rapid reductions in TB incidence and mortality, WHO has given considerable attention to high-level actions aimed at accelerating their development and use. 
+
+In 2022, an investment case that sets out the economic and health impact arguments for TB vaccine development and uptake was developed and published (`r ref_lnk("10")`). Key findings include the following estimates:
+
+ <ul>
+  <li>Over 25 years, a vaccine that is 50% effective in preventing disease among adolescents and adults could avert up to 76 million new TB cases, 8.5 million deaths, 42 million courses of antibiotic treatment and US\$&nbsp;41.5 billion in costs faced by TB-affected households, especially for the poorest and most vulnerable. </li>
+  <li>Over 25 years, a vaccine that is 75% effective could avert up to 110 million new TB cases and 12.3 million deaths. </li>
+  <li>For every US\$&nbsp;1 invested, a vaccine with 50% efficacy could generate an economic return of US\$&nbsp;7 in terms of averted health costs and increased productivity.</li>
+</ul> 
+
+In January 2023, WHO convened a high-level event during the World Economic Forum, to highlight the role of new TB vaccines in the fight against TB (`r ref_lnk("11")`). The importance of strategic partnerships and investments to boost the development, testing and manufacturing of safe and effective TB vaccines and equitable access to their use once available was highlighted, drawing on lessons learned during the COVID-19 pandemic. During the meeting, WHO’s Director-General announced plans to establish an “accelerator Council” on new TB vaccines (`r ref_lnk("12")`). In March 2023, the WHO Director-General also launched a new flagship initiative “FIND.TREAT.ALL. #EndTB” for the period 2023–2027 (`r ref_lnk("13")`); this includes a call for the licensing of at least one new vaccine by 2027. 
+
+To further facilitate the development and testing of new TB vaccines and equitable access to them once available, and as pre-announced in January (see above), the WHO Director-General launched a “TB vaccine accelerator Council” in September 2023, on the margins of the second UN high-level meeting on TB. The aim of the Council is to boost the TB vaccine pipeline and facilitate the licensing and use of safe TB vaccines that will have a substantive impact on the TB epidemic, through catalysing high-level alignment among funders, global agencies, governments and communities on both the important challenges in TB vaccine development and the actions needed to address them.
+
+Other recent or current efforts by WHO to support TB research and innovation include: 
+
+<ul>
+  <li>In January 2023, the launch of a publicly accessible global platform that contains individual patient data for TB treatment (TB-IPD). These data can be used to inform normative guidance on optimal treatment modalities for TB, and stimulate research by making data available for researchers (`r ref_lnk("14")`);</li>
+  <li>In April 2023, the convening of a multistakeholder consultation to discuss the emerging needs of Member States for policy guidance, evidence gaps for policymaking, and challenges in the translation of research evidence into policy (`r ref_lnk("15")`). The aim is to guide decision-makers who fund and implement research to better focus their research agendas on the priorities of TB programmes and affected populations;</li>
+  <li>In May 2023, the launch of a TB research tracker (as mentioned above) to provide an accessible and user-friendly platform to monitor the pipeline of new TB drugs, treatment regimens and vaccines, as well as operational research projects that may inform policy and practice (`r ref_lnk("9")`);</li>
+  <li>In May 2023, the launch by WHO's Global Tuberculosis Programme and the Special Programme for Research and Training in Tropical Diseases (TDR) of an operational research package to evaluate the performance, feasibility, acceptability and impact of treatment decision algorithms for pulmonary TB in children (TDA4Child) (`r ref_lnk("16")`). This followed the release of a similar package for the implementation of CAD for TB (`r ref_lnk("17")`). </li>
+  <li>In May 2023, the holding by WHO and TDR of a virtual training for African countries on the implementation of digital technologies in TB prevention and care (`r ref_lnk("18")`);</li>
+  <li>In June 2023, the launch of a prioritized research agenda for the management of drug-resistant TB, as part of the global antimicrobial resistance (AMR) research agenda in human health (`r ref_lnk("19")`);</li>
+  <li>In September 2023, the launch of target product profiles of tests for monitoring and optimization of TB treatment, as well as the launch of an updated target regimen profiles for TB treatment (`r ref_lnk("4")`);</li>
+  <li>Continued engagement in meetings of a TB research network that comprises Brazil, the Russian Federation, India, China and South Africa (known as the BRICS TB research network) (`r ref_lnk("20")`).</li>
+</ul> 
+
+
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1.	Global strategy and targets for tuberculosis prevention, care and control after 2015. Geneva: World Health Organization; 2014 (https://iris.who.int/handle/10665/162760).
+
+2.	Floyd K, Glaziou P, Houben R, Sumner T, White RG, Raviglione M. Global tuberculosis targets and milestones set for 2016-2035: definition and rationale. Int J Tuberc Lung Dis. 2018;22(7):723-730 (https://www.ncbi.nlm.nih.gov/pubmed/29914597).
+
+3.	The Global Strategy for TB research and innovation. Geneva: World Health Organization; 2020 (https://iris.who.int/handle/10665/336076).
+
+4.	WHO TB Knowledge Sharing Platform. Geneva: World Health Organization; 2023 (https://extranet.who.int/tbknowledge).
+
+5.	Resolution 73/3: Political declaration of the high-level meeting of the General Assembly on the fight against tuberculosis. New York: United Nations; 2018 (https://undocs.org/A/RES/73/3).
+
+6.	Political declaration of the high-level meeting of the General Assembly on the fight against tuberculosis. New York: United Nations; 2023.(https://www.un.org/pga/77/wp-content/uploads/sites/105/2023/09/TB-Final-Text.pdf)
+
+7.	Tuberculosis research funding trends 2005–2021. New York: Treatment Action Group; 2022 (https://www.treatmentactiongroup.org/resources/tbrd-report/tbrd-report-2022/).
+
+8.	Use of targeted next-generation sequencing to detect drug-resistant tuberculosis. Geneva: World Health Organization; 2023 (https://iris.who.int/handle/10665/371687).
+
+9.	WHO launches the TB research tracker, an online platform to track progress in TB research. Geneva: World Health Organization; 2023 (https://www.who.int/news/item/05-06-2023-who-launches-the-tb-research-tracker--an-online-platform-to-track-progress-in-tb-research).
+
+10.	An investment case for new tuberculosis vaccines. Geneva: World Health Organization; 2022 (https://iris.who.int/handle/10665/365230).
+
+11.	Ending Tuberculosis: How Do We Get There? World Economic Forum. Davos: World Economic Forum; 2023 (https://www.weforum.org/events/world-economic-forum-annual-meeting-2023/sessions/ending-tuberculosis-how-do-we-get-there).
+
+12.	WHO announces plans to establish a TB Vaccine Accelerator council  Geneva: World Health Organization; 2023 (https://www.who.int/news/item/17-01-2023-who-announces-plans-to-establish-a-tb-vaccine-accelerator-council#:~:text=Speaking%20earlier%20today%20at%20a,new%20TB%20Vaccine%20Accelerator%20Council).
+
+13.	WHO Director-General Flagship Initiative to #ENDTB 2023-2027. Geneva: World Health Organization; 2023 (https://www.who.int/publications/m/item/who-director-general-flagship-initiative-to-endtb).
+
+14.	Launch of global individual patient data platform for tuberculosis treatment. World Health Organization; 2023 (https://www.who.int/news/item/31-01-2023-launch-of-global-individual-patient-data-platform-for-tuberculosis-treatment).
+
+15.	Third WHO consultation on the translation of tuberculosis research into global policy guidelines. Geneva: World Health Organization; 2023 (https://www.who.int/teams/global-tuberculosis-programme/research-innovation/translation-of-tuberculosis-research-into-global-policy-guidelines).
+
+16.	TDR and WHO announce TDA4Child, an operational research package to generate data on treatment decision algorithms for pulmonary tuberculosis in children. Geneva: World Health Organization; 2023 (https://www.who.int/news/item/15-05-2023-tdr-and-who-announce-tda4child--an-operational-research-package-to-generate-data-on-treatment-decision-algorithms-for-pulmonary-tuberculosis-in-children).
+
+17.	A research toolkit to support the effective use of computer-aided detection (CAD) software for TB by calibrating CAD score thresholds and other parameters. Geneva: World Health Organization; 2023 (https://tdr.who.int/activities/calibrating-computer-aided-detection-for-tb).
+
+18.	Implementation research for digital technologies and tuberculosis. Geneva: TDR, the Special Programme for Research and Training in Tropical Diseases and World Health Organization; 2019 (https://www.ir4dtb.org/en/).
+
+19.	Global research agenda for antimicrobial resistance in human health. Geneva: World Health Organization; 2023 (https://www.who.int/publications/m/item/global-research-agenda-for-antimicrobial-resistance-in-human-health).
+
+20.	BRICS TB Research Network. 2023 (http://bricstb.samrc.ac.za).
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+/* JSON data objects for the figures */
+
+var fig_6_1_data = `r tb_research %>% filter(year %in% 2015:2021) %>% toJSON("rows")`;
+
+</script>
+
+
+```{js, echo=FALSE}
+/* Functions to create the figures */
+function createFig_6_1() {
+		$("#fig_6_1").kendoChart({
+			dataSource: fig_6_1_data,
+			chartArea: {
+				height: 400
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "column"
+			},
+			series: [{
+				field: "research",
+				color: "lightblue",
+				gap: 0.1
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "Billions (current US$)"
+				},
+				line: {
+					visible: false
+				},
+				max: 2.05,
+                    line: {
+                        visible: false
+                    },
+				plotBands: [{
+					from: 1.995,
+					to: 2.005,
+					color: "red",
+					opacity: 1,
+					label: {
+						text: "Target: US$ 2 billion",
+						font: "20px Arial,Helvetica,sans-serif",
+						position: "bottom",
+						align: "center",
+						padding: -25
+					}
+				}]
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+				majorGridLines: {
+					visible: false
+				},
+				plotBands: [{ 
+					from: 2019, 
+					to: 2021, 
+					color: "grey",
+					opacity: 0.5
+				}]
+			},
+			tooltip: {
+				visible: true,
+				template: "TB research expenditure (#= category #): #= value # billion (current US$)"
+			}
+		});
+}
+
+```
+
+```{js, echo=FALSE}
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function () {
+                  createFig_6_1();
+
+}); 
+
+```
+

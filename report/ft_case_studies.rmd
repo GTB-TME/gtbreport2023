@@ -1,0 +1,342 @@
+---
+title: "Featured topic: Notable findings from two recent TB epidemiological reviews in the WHO African Region"
+author: "Irwin Law and Taku Yamanaka"
+date: "`r Sys.Date()`"
+time: "`r Sys.time()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Do not include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Do not write figure captions
+    fig_caption: FALSE
+    css: columns.css
+    # to save intermediate .png
+    keep_md: true    
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: False
+    # Don't include <div> tags around a header and the content found until the next header
+    section_divs: FALSE  
+
+# To run this file and store output as html:
+# rmarkdown::render(here::here("report/ft_case_studies.rmd"), output_file = "ft_case_studies.html", output_dir = here::here("report/local/"))
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,  fig.align = "center"}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Clear the decks ----
+rm(list=ls())
+
+
+# Load packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+library(ggplot2)
+library(dplyr)
+library(gtbreport)
+library(here)
+library(jsonlite)
+library(tidyverse)
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ft_case_studies")
+save_csv = TRUE
+save_pdf = TRUE
+save_cairo = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+
+# Load data for the featured topic
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+f1_data <- read.csv(here("report/ft_case_studies_data/Nigeria_data.csv"))
+f2_data <- read.csv(here("report/ft_case_studies_data/Tanzania_data.csv"))
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+
+
+# Notable findings from two recent TB epidemiological reviews in the WHO African Region
+
+<span class="red">**_Draft! Prepared `r Sys.time()`` _**</span>
+
+Epidemiological reviews of tuberculosis (TB) comprise an evaluation of the capacity of the surveillance system to directly measure the number of TB cases and deaths, using the World Health Organization (WHO) surveillance checklist of standards and benchmarks (`r ref_lnk("1")`), coupled with an epidemiological analysis to assess the level of, and trends in, TB burden in the country. Such reviews have four main components: analysis of TB (and other relevant) data, interviews with national TB programmes (NTPs) and relevant stakeholders, desk reviews of documents, and health facility visits to understand people and data flows. Findings and recommendations from these reviews are used to inform programme reviews and strategic planning activities; they are also used in developing concept notes for domestic and international funding requests. Standardized terms of reference (ToR) for TB epidemiological reviews have been available since 2013, with the latest being the 2018 ToR (`r ref_lnk("2")`). Key findings and recommendations made to NTPs from epidemiological reviews carried out in the high TB burden countries have been synthesized (`r ref_lnk("3")`).
+
+This document gives examples of notable findings from two countries: Nigeria and the United Republic of Tanzania.
+
+
+
+## Nigeria, January 2023
+
+Nigeria conducted an epidemiological review on 9–20 January 2023, its fourth since 2014. The time trend in TB case notifications since 2014 has been fairly stable, at around 50 cases per 100 000 population `r lnk("Fig. 1")`. Findings from the 2020 epidemiological review suggested that the most important factor for this low level of case notification and the corresponding low levels of treatment coverage (24% in 2018) was the underdiagnosis of people with TB, which in turn was due to issues with the network of primary health care (PHC) facilities. The underdiagnosis was compounded by the underreporting of people with TB, primarily from the private sector and particularly in urban settings.
+
+Four major routine programmatic activities were introduced around 2020 to address these findings, increase screening coverage and strengthen diagnosis and reporting of people with TB:
+
+<ul>
+<li>active screening in the outpatient departments (OPD) of PHCs, where all those attending OPD are screened for TB symptoms upon registration and are re-routed through TB services for sputum collection and testing if screening is positive;</li>
+<li>expansion of TB service provision through further engagement of the PHC network, with the provision of additional GeneXpert machines;</li>
+<li>engagement with private service providers to provide diagnosis, treatment and reporting of people with TB; and</li>
+<li>community outreach activities, including home-based screening and referral of presumptive TB cases to a local health facility.</li>
+</ul>
+
+The 2023 epidemiological review found excellent progress in case finding and reporting, with the absolute number of total case notifications increasing from 103 018 in 2018 to 285 561 in 2022, corresponding to an increase in estimated treatment coverage from 24% in 2018 to 59% in 2022 `r lnk("Fig. 1")`. Among the 282 184 new and relapse TB cases notified in 2022, 99% were pulmonary, of which 81% were bacteriologically confirmed. Despite the sharp increase in case notifications, the NTP maintained the high quality of services offered in 2022: treatment success was 91%, and 97% of new and relapse TB cases had a documented HIV status at diagnosis. 
+
+The NTP remained resilient to the shock of the coronavirus disease (COVID-19) pandemic and only experienced a small decrease in case notifications during a lockdown in the second quarter of 2020. In fact, the implementation of parallel TB and COVID-19 screening during the height of the pandemic contributed to increased TB case finding.
+
+Although the gains made in Nigeria are obvious, an important gap remains in finding all people living with TB. This is due to various factors, some of which are clearly the responsibility of the NTP (e.g. incomplete TB service coverage of PHCs) whereas others are not so strongly linked to the NTP (e.g. barriers to universal health coverage). Therefore, increased investment will be needed to maintain momentum and continue expanding these successful programmatic strategies. As case detection is scaled up further, there is a risk that the system in place for caring for the patients will become saturated and the quality of care may drop. Therefore, investment will also need to be strengthened along the rest of the pathway of prevention and care, to ensure that capacity and resources are sufficient to maintain high-quality and timely laboratory testing and transmission of results, high treatment success rates, high coverage of HIV testing among diagnosed TB cases, and recording and reporting of high-quality data.
+
+
+
+### `r anch("Fig. 1")`<span class="red">Fig. 1</span> Notifications of TB cases &#8211; overall, new and relapse all forms of TB, pulmonary bacteriologically confirmed and clinically diagnosed, 2014&#8211;2022, Nigeria
+
+```{r fig_1, fig.alt="Line chart showing Notifications of TB cases - overall, new and relapse all forms of TB, pulmonary bacteriologically confirmed and clinically diagnosed in Nigeria from 2014 to 2022"}
+
+scaleFUN <- function(x) sprintf("%.0f", x)
+
+f1_plot<-ggplot(data=f1_data, aes(x=Year, y=value, group=category, colour=category)) +
+    geom_line(size=1) +
+    geom_point() +
+    #theme_gtb() +
+    scale_y_continuous(name = "Notifications per year (Number)",
+                   limits = c(0,300000),
+                   labels=scaleFUN) +
+    scale_color_manual(labels=c("Notified TB cases (all cases, all forms)",	
+                                  "Notified TB cases (new and relapse, all forms)",
+                                  "Notified TB cases (new and relapse, pulmonary bacteriologically confirmed)",
+                                  "Notified TB cases (new and relapse, pulmonary clinically diagnosed)"),
+                       values = c("orange", "skyblue", "seagreen", "red")) +
+    theme(legend.title=element_blank())
+
+output_ggplot(f1_plot, f1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div id="fig_1"></div>
+
+<div class="footnote">Source: National TB & Leprosy Programme, Nigeria.  
+</left>
+</div>
+
+<hr />
+<br />
+
+## United Republic of Tanzania, January 2023
+
+The United Republic of Tanzania conducted an epidemiological review on 15–25 January 2023, its third since 2014. The number of TB case notifications was relatively constant over the period 2001–2015 (between 60 000 and 65 000 cases) and then increased slowly until 2018, where it reached a peak of more than 70 000 TB cases notified `r lnk("Fig. 2")`. In 2019, a 15% increase was seen compared with 2018, and a further increase of 15% was seen between 2021 and 2022, where almost 100 000 TB cases were notified.
+
+The increase in TB notification since 2018 was mainly due to an increase in clinically diagnosed TB, although the number of laboratory-confirmed TB cases remained constant over time. Another shift was observed in 2022, with the number of clinically diagnosed TB increasing much faster than the number of bacteriologically confirmed TB. Upon further investigation and analysis during the epidemiological review, this increase could be partly explained by the national screening and diagnosis algorithm, which recommends that presumptive TB cases with a negative Xpert result undergo a clinical assessment and chest radiography. If the outcome of this assessment is “suggestive of TB”, patients start TB treatment, despite the negative bacteriological evidence. At the national level, it has been shown that about a third of people with a negative Xpert result still start TB treatment based on the clinical assessment and chest radiography. However, it is not clear whether “suggestive for TB” is a sufficiently specific outcome to treat people for TB among a population with high transmission and hence high prevalence of lung abnormalities (e.g. “healed” TB). The review recommended further and more regular analyses of case-based data, and a small-scale study to review a sample of medical records and re-read chest X-rays, to rule out overdiagnosis caused by the current algorithm.
+
+The TB programme made significant progress in 2018 with the establishment, and subsequent national roll-out, of a digital case-based surveillance system for TB (ETL/DHIS2). The system was last updated in September 2021 and is supported by a strong national team. However, other parts of the Ministry of Health and other parts of government are responsible for the development of a national digital strategy, as well as the development and roll-out of new digital health data systems. The NTP needs to strengthen collaboration and coordination with these government agencies, to ensure its needs are met in terms of surveillance, monitoring and evaluation, and other TB-related administrative processes. This could include the establishment of a national technical group to discuss key issues such as the establishment of a unique identification (ID) for health, data linkages with laboratories, and routine analysis and use of data at all levels including that of the health facility. 
+
+
+### `r anch("Fig. 2")`<span class="red">Fig. 2</span> Notifications of TB cases &#8211; overall, new and relapse all forms of TB, pulmonary bacteriologically confirmed and clinically diagnosed, 2001&#8211;2022, United Republic of Tanzania
+
+```{r fig_2, fig.alt="Line chart showing Notifications of TB cases - overall, new and relapse all forms of TB, pulmonary bacteriologically confirmed and clinically diagnosed in Tanzania from 2001 to 2022"}
+
+scaleFUN <- function(x) sprintf("%.0f", x)
+
+f2_plot<-ggplot(data=f2_data, aes(x=Year, y=value, group=category, colour=category)) +
+    geom_line(size=1) +
+    geom_point() +
+    #theme_gtb() +
+    scale_y_continuous(name = "Notifications per year (Number)",
+                   limits = c(0,125000),
+                   labels=scaleFUN) +
+    scale_color_manual(labels=c("Notified TB cases (all cases, all forms)",	
+                                  "Notified TB cases (new and relapse, all forms)",
+                                  "Notified TB cases (new and relapse, pulmonary bacteriologically confirmed)",
+                                  "Notified TB cases (new and relapse, pulmonary clinically diagnosed)"),
+                       values = c("orange", "skyblue", "seagreen", "red")) +
+    theme(legend.title=element_blank())
+
+output_ggplot(f2_plot, f2_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+ 
+```
+
+<div id="fig_2"></div>
+
+<div class="footnote">Source: National TB & Leprosy Programme, United Republic of Tanzania  
+</left>
+</div>
+
+<br />
+
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. WHO consolidated guidelines on tuberculosis data generation and use. Module 1: Tuberculosis surveillance. Web Annex B. Standards and benchmarks for tuberculosis surveillance and vital registration systems: checklist (2nd edition). Geneva: World Health Organization; (In press).
+
+2. 	Assessing the performance of national TB surveillance using the WHO TB surveillance checklist of standards and benchmarks, 2013–2020: synthesis of findings from high TB burden countries. Geneva: World Health Organization; (In press).
+
+3. 	Guidance on conducting reviews of tuberculosis programmes. Geneva: World Health Organization; (In press).
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+/* JSON data objects for the figures */
+
+var f1_data = `r f1_data %>% pivot_wider(names_from = category, values_from = value) %>% toJSON("rows")`; 
+var f2_data = `r f2_data %>% pivot_wider(names_from = category, values_from = value) %>% toJSON("rows")`; 
+
+</script>
+
+
+```{js, echo=FALSE}
+
+/* Functions to create the figures */
+function createFig_1_1(fig_ID, data, filter) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.country == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: 500
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+        name: "Notified TB cases (all cases, all forms)",
+				field: "a",
+				color: "orange",
+				markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				template: "All cases, all forms (#= category #): #= num_spacer(value) #"
+			}
+			},{
+        name: "Notified TB cases (new and relapse, all forms)",
+				field: "b",
+				color: "skyblue",
+				markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				template: "New and relapse, all forms (#= category #): #= num_spacer(value) #"
+        }
+			},{
+        name: "Notified TB cases (new and relapse, pulmonary bacteriologically confirmed)",
+				field: "c",
+				color: "seagreen",
+				markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				template: "New and relapse, pulmonary bacteriologically confirmed (#= category #): #= num_spacer(value) #"
+        }
+			},{
+        name: "Notified TB cases (new and relapse, pulmonary clinically diagnosed)",
+				field: "d",
+				color: "red",
+				markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				template: "New and relapse, pulmonary clinically diagnosed (#= category #): #= num_spacer(value) #"
+			}
+			},
+              ],
+
+			valueAxis: {
+				labels: {
+					template: "#= axis_spacer(value) #"
+				},
+				title: {
+					text: "Notifications per year (Number)",
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        min: 0
+			},
+			categoryAxis: {
+				field: "Year",
+        labels: {
+					rotation: 0,
+          step: 2
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year"
+				}
+			}
+
+		});
+}
+
+
+```
+
+
+```{js, echo=FALSE}
+
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function() {
+  
+  createFig_1_1("#fig_1", f1_data);
+  createFig_1_1("#fig_2", f2_data);
+
+});
+
+```
+
+
+

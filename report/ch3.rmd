@@ -1,0 +1,1311 @@
+---
+title: "Section 3 TB prevention and screening"
+author: "Hazim Timimi"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Don’t include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Don’t write figure captions
+    fig_caption: FALSE
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: FALSE
+
+# To run this file and store output as html:
+# rmarkdown::render(here::here("report/ch3.rmd"), output_file = "ch3.html", output_dir = here::here("report/local/"))
+---
+
+```{r setup, include=FALSE}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Kill any attempt at using factors, unless we explicitly want them!
+options(stringsAsFactors=FALSE)
+
+
+# Set output options ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+# Show Irwin's doughnuts chart?
+show_doughnuts = TRUE
+
+# Show static chart in addition to Kendo chart?
+show_static = FALSE
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ch3")
+save_csv = TRUE
+save_pdf = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+
+# Load output packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+library(ggplot2)
+library(dplyr)
+library(scales)
+library(RColorBrewer)
+library(whomap)
+library(gtbreport)
+library(here)
+library(stringr)
+library(jsonlite)
+
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+
+# Get the data sets and computed values/statistics for this chapter ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+source(here('report/ch3_prepare_data.r'))
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+
+```{css, echo=FALSE}
+/* Tine to treatment table */
+/* Recreating simple striped bootstrap table */
+#time_to_tx_table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  /* Next two lines to allow horizontal scrolling on narrow screens */
+  display: block;
+  overflow-x: auto;
+}
+
+#time_to_tx_table th {
+  border-bottom: 2px solid #DDDDDD;
+  padding: 8px;
+}
+
+#time_to_tx_table td {
+  border-top: 1px solid #DDDDDD;
+  padding: 8px;
+}
+
+/* light gray for odd rows */
+#time_to_tx_table tr:nth-child(odd) td {
+  background-color: #F5F5F5;	
+}
+
+
+/* light gray when hovering over a row */
+#time_to_tx_table tr:hover td {
+  background-color: #DDDDDD;
+}
+
+/* Centre-align all column headings except for the first */
+#time_to_tx_table th:not(:first-child) {
+  text-align: center !important;
+}
+
+/* prevent numbers from wrapping in any of the columns */
+#time_to_tx_table td {
+  white-space: nowrap;
+}
+
+```
+
+
+
+
+# 3. Tuberculosis prevention and screening
+
+
+_Draft! Prepared `r Sys.Date()` using country-reported data snapshot files from `r snapshot_date` and incidence estimates from `r est_date` _
+
+
+Preventing tuberculosis (TB) infection and stopping progression from infection to disease are critical for reducing TB incidence to the levels envisaged by the End TB Strategy. The main health care interventions to achieve this reduction are TB preventive treatment (TPT), which the World Health Organization (WHO) recommends for people living with HIV, household contacts of people with TB and other risk groups (`r ref_lnk("1")`, `r ref_lnk("2")`). Strategies to provide TPT are often linked to screening to find and treat people with TB earlier in the course of their disease and thus help to reduce transmission and improve outcomes (`r ref_lnk("2")`). Other TB preventive approaches are TB infection prevention and control (TB IPC) (`r ref_lnk("3")`) and vaccination of children with the bacille Calmette-Guérin (BCG) vaccine. Addressing broader determinants that influence TB epidemics can also help to prevent TB infection and disease; these are discussed in <span class="red">Section 5.3</span>.
+
+
+## 3.1 TB preventive treatment
+
+The global number of people living with HIV and household contacts of people diagnosed with TB who were provided with TPT increased from `r ftb(f3.1_txt$tot_tpt_2015/1e6)` million in 2015 to `r ftb(f3.1_txt$tot_tpt_2019/1e6)` million in 2019. There was then a sizeable reduction to `r ftb(f3.1_txt$tot_tpt_2020/1e6)` million in 2020 and 2021, probably reflecting disruptions to health services caused by the coronavirus (COVID-19) pandemic (`r lnk("Fig. 3.1")`). There was a substantial recovery to `r ftb(f3.1_txt$tot_tpt_2022/1e6)` million in 2022, above the pre-pandemic level. 
+
+Between 2021 and 2022, there was a particularly noticeable increase in the number of household contacts enrolled on TPT: from `r ftb(f3.1_txt$con_tpt_2021/1e6)` million to `r ftb(f3.1_txt$con_tpt_2022/1e6)` million. In contrast, the number of people living with HIV who were enrolled on TPT fell, from `r ftb(f3.1_txt$hiv_tpt_2021/1e6)` million in 2021 to `r ftb(f3.1_txt$hiv_tpt_2022/1e6)` million in 2022. 
+
+
+
+### `r anch("Fig. 3.1")`<span class="red">Fig. 3.1</span> The global number of people provided with TB preventive treatment (TPT), 2015–`r report_year - 1`
+
+```{r fig_3.1, fig.alt="Bar chart showing numbers provided with TB preventive treatment each year since 2015"}
+
+f3.1_plot <- f3.1_data  |>  
+  
+  ggplot(aes(x=year, y=how_many, fill = TPT_category)) +
+
+  geom_bar(stat = "identity")  +
+
+  geom_col(position = position_stack(reverse = TRUE)) +
+
+  scale_x_continuous(name="",
+                   breaks = 2015:(report_year-1)) +
+  
+  # display y-axis scale in millions
+  scale_y_continuous(name = "Millions", 
+                     labels = function(i){round(i/1e6)},
+                     limits = c(0,4.5e6)) +
+
+  scale_fill_manual("",
+                    breaks = c("hiv_tpt", "house_con04_tpt", "house_con5plus_tpt" ),
+                    labels = c("People living with HIV", "Household contacts aged <5 years", "Household contacts aged \u22655 years"),
+                    values = c("hiv_tpt"="#ffc425",
+                               "house_con04_tpt"="#9fcd25",
+                               "house_con5plus_tpt"="dark green")) +
+
+
+  theme_gtb() +
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f3.1_plot, f3.1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div id="fig_3_1"></div>
+
+<hr />
+<br />
+
+The global target of providing TPT to 30 million people in the 5-year period 2018–2022, set at the United Nations (UN) high-level meeting on TB in 2018, was missed by a substantial margin (`r lnk("Fig. 3.2")`), mainly because insufficient numbers of household contacts were started on treatment. In contrast, the target for people living with HIV was far surpassed, although further scale-up will be needed to reach the target of providing TPT to 90% of people living with HIV by 2025 (`r ref_lnk("4")`). This target was reaffirmed at the 2021 UN high-level meeting on HIV and AIDS (`r ref_lnk("5")`).
+
+
+### `r anch("Fig. 3.2")`<span class="red">Fig. 3.2</span> The global numbers of people provided with TB preventive treatment (TPT) between 2018 and 2022, compared with targets set at the 2018 UN high-level meeting on TB^a^
+
+
+```{r fig_3.2, fig.alt="Doughnut chart showing how much of the UN high level meeting targets for 2018-2022 have been completed for TB preventive treatment", eval=!show_doughnuts}
+
+
+# The code below produces a bar chart as an alternative to the doughnuts produced by Irwin
+f3.2_plot <- f3.2_data |>
+
+  ggplot(aes(x=TPT_category, y=target_completion)) +
+  geom_bar(stat="identity", fill="darkblue",width = 0.5) +
+
+  expand_limits(y=c(0,100)) +
+  scale_y_continuous(breaks = c(20, 40, 60 , 80, 100)) +
+  ylab("Percent of UN target achieved") +
+  scale_x_discrete(limits = c("house_con5plus_tpt",
+							  "house_con04_tpt",
+							  "hiv_tpt",
+							  "all_tpt"),
+                   labels = c("20 million contacts\naged 5 years and over",
+							  "4 million contacts\naged under 5 years",
+							  "6 million people\nliving with HIV",
+							  "30 million total")) +
+  xlab("2018-2022 cumulative target") +
+  coord_flip() +
+
+  theme_gtb() +
+
+  geom_text(data=f3.2_data,
+            aes(label = paste(round(tot/1e6, digits = 1), "million\n", round(target_completion), "%  ") ),
+            position = position_stack(reverse = TRUE), 
+            size=2.5,
+            hjust=1.5,
+            color="white") +
+  
+  ggtitle("(to be replaced by doughnuts!)")
+
+
+output_ggplot(f3.2_plot, f3.2_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+```{r eval=show_doughnuts}
+
+knitr::include_graphics("images/fig3.2.png", rel_path=TRUE)
+
+```
+<div class="footnote">^a^ Numbers of people living with HIV reported for 2020&#8211;2021 were revised downwards in 2023, following corrections to reported data for these years.</div>
+
+<hr />
+<br />
+
+Ensuring access to shorter rifamycin-containing regimens may help to increase access to TPT. In `r report_year - 1`, `r ftb(f3.3_txt$people_short_rfp/1e6)` million people started shorter regimens in `r f3.3_txt$countries_short_rfp` countries. By December 2022, `r f3.3_txt$countries_used` countries reported having used shorter rifapentine-containing regimens (`r lnk("Fig. 3.3")`). In `r report_year - 1` alone, `r f3.3_txt$tpt_3hp` countries reported using the 3-month weekly regimen of rifapentine and isoniazid, and `r int2word(f3.3_txt$tpt_1hp)` reported using the 1-month daily regimen of rifapentine and isoniazid; also, `r f3.3_txt$rifampicin` countries reported using a rifampicin-based regimen, of which `r f3.3_txt$tpt_3hr` were using the 3-month daily regimen of rifampicin and isoniazid, and `r f3.3_txt$tpt_4r` were using the 4-month daily regimen of rifampicin only.    
+
+
+### `r anch("Fig. 3.3")`<span class="red">Fig. 3.3</span> Use of rifapentine in TB preventive treatment (TPT),^a^ by country, by December 2022
+
+
+```{r fig_3.3, fig.alt="Map showing countries using rifapentine for TB preventive treatment"}
+
+
+f3.3_plot <- f3.3_data |> 
+  
+  whomap(colours = c('#53abd0', '#d9777d'),
+         legend.title = "Status",
+         na.label = "No data",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f3.3_plot, f3.3_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div class="footnote">^a^ Data sources: Sanofi, Global Drug Facility, Lupin and national reporting. Rifapentine is currently registered for use in `r sub("Hong Kong SAR", "Hong Kong Special Administrative Region", gsub("(Democratic)|(Philip)|(United)", "the \\1\\2\\3", knitr::combine_words(f3.3_footnote$country, oxford_comma=FALSE)))`. Several countries in which rifapentine is not yet registered have accessed it using local waiver mechanisms.</div>
+
+<hr />
+<br />
+
+## 3.2 Household contacts
+
+Globally in `r report_year - 1`, there were an estimated `r ftb(f3.4_txt$e_hh_contacts/1e6)` million (95% uncertainty interval [UI]: `r ftb(f3.4_txt$e_hh_contacts_lo/1e6)`–`r ftb(f3.4_txt$e_hh_contacts_hi/1e6)` million) household contacts of bacteriologically confirmed pulmonary TB cases of all ages. However, only `r ftb(f3.4_txt$newinc_con_2022/1e6)` million contacts were reported in `r report_year - 1` (up `r ftb(f3.4_txt$change_con_22_21_pct)`% from `r ftb(f3.4_txt$newinc_con_2021/1e6)` million in `r report_year - 2`), with `r ftb(f3.4_txt$newinc_con_screen_2022/1e6)` million (`r ftb(f3.4_txt$screened_pct_2022)`%) of these contacts evaluated for both TB infection and disease (up `r ftb(f3.4_txt$change_screen_22_21_pct)`% from `r ftb(f3.4_txt$newinc_con_screen_2021/1e6)` million in `r report_year - 2`). The percentage of contacts who were evaluated varied widely among countries (`r lnk("Fig. 3.4")`). 
+
+A total of `r ftb(f3.1_txt$con_5plus_tpt_2022/1e6)` million household contacts aged 5 years and over started TPT in `r report_year - 1`, representing a large (fourfold) increase compared with `r report_year - 2` (`r lnk("Fig. 3.1")`). This change was driven by substantial increases in `r int2word(nrow(f3.1_txt_big_changes_list))` high TB burden countries: `r knitr::combine_words(f3.1_txt_big_changes_list$country, oxford_comma=FALSE)`. 
+
+In `r report_year - 1`, `r ftb(f3.1_txt$con04_tpt_2022/1e6)` million household contacts aged under 5 years started TPT (out of an estimated `r ftb(f3.4_txt$e_prevtx_eligible/1e6)` million who were eligible) – a `r ftb(f3.1_txt$con04_22_21_pct)`% increase compared with `r report_year - 2`.
+
+Globally, the `r ftb(f3.5_txt$con_tpt/1e6)` million household contacts provided with TPT in `r report_year - 1` represented about `r ftb(f3.5_txt$con_tpt * 100 / f3.4_txt$newinc_con_2022)`% of the `r ftb(f3.4_txt$newinc_con_2022/1e6)` million contacts reported and `r ftb(f3.5_txt$tpt_pct)`%  of the `r ftb(f3.4_txt$e_hh_contacts/1e6)` million contacts estimated. There was considerable variation among countries in both the percentage of household contacts who were evaluated for TB disease and infection, and the percentage of household contacts who were provided with TPT  (`r lnk("Fig. 3.4")`, `r lnk("Fig. 3.5")`). 
+
+
+### `r anch("Fig. 3.4")`<span class="red">Fig. 3.4</span> Percentage of the reported number of household contacts of people newly diagnosed with bacteriologically confirmed pulmonary TB disease who were evaluated for TB disease and TB infection, by country, `r report_year - 1`
+
+```{r fig_3.4, fig.alt="Map showing evaluation for TB disease and TB infection among household contacts of bacteriologically confirmed pulmonary TB cases"}
+
+f3.4_plot <- f3.4_data |> 
+  
+  whomap(colours = brewer.pal(4, "Reds"),
+         legend.title = "Percentage (%)",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f3.4_plot, f3.4_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+
+<hr />
+<br />
+
+### `r anch("Fig. 3.5")`<span class="red">Fig. 3.5</span> Percentage of the estimated number of household contacts of people newly diagnosed with bacteriologically confirmed pulmonary TB disease who were provided with TB preventive treatment (TPT), by country, `r report_year - 1` 
+
+
+```{r fig_3.5, fig.alt="Map showing estimated percentage of household contacts given TB preventive treatment"}
+
+f3.5_plot <- f3.5_data |> 
+  
+  whomap(colours = brewer.pal(3, "Greens"),
+         legend.title = "Percentage (%)",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f3.5_plot, f3.5_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<hr />
+<br />
+
+Data on completion of TPT among household contacts who started treatment in `r report_year - 2`  was reported by `r f3.6_txt$countries` countries; the median completion rate was `r ftb(f3.6_txt$median)`% (interquartile range [IQR], `r ftb(f3.6_txt$q1)`–`r ftb(f3.6_txt$q3)`%) but rates varied widely (`r lnk("Fig. 3.6")`). 
+
+
+### `r anch("Fig. 3.6")`<span class="red">Fig. 3.6</span> Completion of TB preventive treatment (TPT) among household contacts, by WHO region, `r report_year - 2`
+<div class="subhead">Each dot represents a country. Put cursor over a dot to see the country name.</div>
+
+
+```{r fig_3.6, fig.alt="Panel plot showing percentage completion vs number contacts started TPT by WHO region"}
+
+f3.6_plot <- f3.6_data |> 
+  
+  ggplot(aes(x=newinc_con_prevtx, y=pct_completed)) +
+  
+  geom_point(size=3, colour = "#ff748c") +
+  
+  scale_x_log10(name="Contacts starting TPT  (log scale)",
+                     labels = function(i){gtbreport::int_spacer(i)}) +
+  
+  scale_y_continuous(name = "% contacts who completed TPT") +
+  
+  expand_limits(y = c(0, 100)) +
+
+  facet_wrap( ~ entity, ncol = 3, scales = "free") +
+  
+  theme_bw() +  # Adds a panel border for Dennis
+
+  theme_gtb() +
+  
+  # Get rid of x-axis line so as not to overwrite panel borders
+  theme(axis.line.x = ggplot2::element_blank())
+
+output_ggplot(f3.6_plot, f3.6_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_6_afr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_6_amr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_6_sear"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_6_eur"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_6_emr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_6_wpr"></div>
+</div>
+</div>
+
+<hr />
+<br />
+
+Globally, the cascade of TB preventive care shows a big gap between the number of household contacts screened for TB disease and the number starting TPT (`r lnk("Fig. 3.7")`).
+
+
+### `r anch("Fig. 3.7")`<span class="red">Fig. 3.7</span> Cascade of care for provision of TB preventive treatment (TPT) to household contacts of people newly diagnosed with bacteriologically confirmed pulmonary TB disease, `r report_year - 2`
+<div class="subhead">The graphic is limited to `r f3.7_txt$contacts_countries` countries for which data for all stages of the cascade were available.</div>
+<br />
+
+
+```{r fig_3.7_contacts, fig.alt="Bar chart of TPT cascade of care for household contacts (countries with data for all steps)"}
+
+f3.7_plot <- f3.7_data |> 
+  
+  ggplot(aes(x=stage, y=how_many/1e6)) +
+  geom_bar(stat="identity", fill="darkblue",width = 0.5) +
+
+  ylab("Number of people (millions)") +
+
+  xlab("") +
+
+  theme_gtb() +
+
+  geom_text(data=f3.7_data,
+            aes(label = paste0(ftb(pct), "%") ),
+            nudge_y = -0.15,
+            color="white") 
+
+
+output_ggplot(f3.7_plot, f3.7_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+ 
+```
+
+<div id="fig_3_7"></div>
+
+<hr />
+<br />
+
+## 3.3 People living with HIV
+
+Globally, the annual number of people living with HIV who received TPT increased from fewer than 30\ 000 in 2005 to `r ftb(f3.8_txt$hiv_tpt_2019/1e6)` million in 2019 (`r lnk("Fig. 3.8")`). Since then, reported numbers have decreased, to `r ftb(f3.8_txt_reported$provided_2020/1e6)` million in 2020, `r ftb(f3.8_txt_reported$provided_2021/1e6)` million in 2021 and `r ftb(f3.8_txt_reported$provided_2022/1e6)` million in 2022. There were declines in five of the six WHO regions between 2019 and 2021. In absolute terms, these declines were biggest in the WHO African Region. In 2022, there was a slight recovery in the WHO regions of the Americas, South-East Asia and the Western Pacific. Possible reasons for the reductions include disruptions to health services caused by the COVID-19 pandemic and changes in data collection. The number of countries reporting data fell from `r f3.8_txt_reported$reported_2019` in 2019 to `r f3.8_txt_reported$reported_2022` in 2022.  
+
+`r str_to_title(int2word(nrow(f3.8_txt_biggies)))` countries provided TPT to more than 100\ 000 people living with HIV in `r report_year - 1`, and collectively accounted for `r ftb(sum(f3.8_txt_biggies$hiv_tpt_all)/1e6)` million (`r ftb(sum(f3.8_txt_biggies$hiv_tpt_all)*100/f3.8_txt_reported$provided_2022)`%) of the global total in `r report_year - 1`: `r knitr::combine_words(f3.8_txt_biggies$country, oxford_comma=FALSE)`.
+ 
+Between 2005 and the end of `r report_year - 1`, `r ftb(f3.8_txt_cumulative$hiv_tpt_05_now/1e6)` million people living with HIV were initiated on TPT, equivalent to just under half of the 39 million people estimated to be living with HIV in 2022 (`r ref_lnk("6")`).
+
+Among `r f3.8_txt_newly_enrolled$countries` countries that reported data, a median of `r ftb(f3.8_txt_newly_enrolled$median)`% (IQR: `r ftb(f3.8_txt_newly_enrolled$q1)`–`r ftb(f3.8_txt_newly_enrolled$q3)`%) of people living with HIV who were newly started on antiretroviral therapy (ART) received TPT in `r report_year - 1`.  
+
+
+### `r anch("Fig. 3.8")`<span class="red">Fig. 3.8</span> Provision of TB preventive treatment (TPT) to people living with HIV^a^, globally and by WHO region, 2005–`r report_year - 1`
+
+```{r fig_3.8, fig.alt="Panel plots showing numbers of people living with HIV provided with TB preventive treatment each year since 2005 globally and by WHO region"}
+
+f3.8_plot <- f3.8_data |> 
+  
+ggplot() +
+  geom_line(aes(x=year, y=hiv_tpt_new, colour = "Newly enrolled on HIV treatment"), size=1, linetype="dashed") +
+
+  geom_line(aes(x=year, y=hiv_tpt_all, colour = "Currently on HIV treatment"), size=1, linetype="solid") +
+
+  scale_x_continuous(name="",
+                     breaks = c(2005, 2010, 2015, report_year-1)) +
+  scale_y_continuous(name = "Number of people (thousands)",
+                     # Use the remainder operator in the labeller function to make sure we don't get weird effects
+                     # when plotting small numbers
+                     labels = function(i){ifelse((i/1e3) %% 1 == 0, gtbreport::int_spacer(i/1e3), "")}) +
+  
+  # Need a colour scale for a legend to be shown
+  scale_colour_manual(name="", values = c("Newly enrolled on HIV treatment" = "red",
+                                          "Currently on HIV treatment" = "#277abe")) +
+  
+  expand_limits(y = 0) +
+
+  facet_wrap( ~ entity, ncol = 4, scales = "free_y") +
+
+  theme_gtb() +
+
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f3.8_plot, f3.8_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_3_8_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_8_afr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_8_amr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_8_sear"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_8_eur"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_8_emr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_8_wpr"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ For the period 2005-2016, countries were requested to report data for people newly enrolled in HIV care (dashed red lines). Subsequently, countries have been encouraged to report data for people currently on ART (solid blue lines).</div>
+
+<hr />
+<br />
+
+In `r f3.9_txt$countries` countries that reported data, a median of `r ftb(f3.9_txt$median)`% (IQR: `r ftb(f3.9_txt$q1)`–`r ftb(f3.9_txt$q3)`%) of people living with HIV who started TPT in `r report_year - 2` completed the treatment (`r lnk("Fig. 3.9")`). 
+
+### `r anch("Fig. 3.9")`<span class="red">Fig. 3.9</span> Completion of TB preventive treatment (TPT) among people living with HIV, by WHO region, `r report_year - 2`
+<div class="subhead">Each dot represents a country. Put cursor over a dot to see the country name.</div>
+
+
+```{r fig_3.9, fig.alt="Dot plot showing percentage completion vs number PLHIV started TPT coloured by WHO region"}
+
+f3.9_plot <- f3.9_data |> 
+  
+  ggplot(aes(x=hiv_all_tpt_started, y=pct_completed)) +
+  
+  geom_point(size=3, colour = "#ff748c") +
+  
+  scale_x_log10(name="People living with HIV starting TPT (log scale)",
+                     labels = function(i){gtbreport::int_spacer(i)}) +
+  
+  scale_y_continuous(name = "% who completed TPT") +
+  
+  scale_color_hue(name = '') + 
+  
+  expand_limits(y = c(0, 100)) +
+
+  facet_wrap( ~ entity, ncol = 3, scales = "free") +
+  
+  theme_bw() +  # Adds a panel border for Dennis
+
+  theme_gtb() +
+  
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+output_ggplot(f3.9_plot, f3.9_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_9_afr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_9_amr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_9_sear"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_9_eur"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_9_emr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_9_wpr"></div>
+</div>
+</div>
+
+<hr />
+<br />
+
+## 3.4 Screening for TB disease in household contacts and other high-risk groups 
+
+Among `r f3.10_txt$countries` countries reporting the results of TB screening in household contacts in `r report_year -1`, the overall yield was `r ftb(f3.10_txt$overall)`% (median: `r ftb(f3.10_txt$median)`%; IQR: `r ftb(f3.10_txt$q1)`–`r ftb(f3.10_txt$q3)`%) (`r lnk("Fig. 3.10")`). `r str_to_title(int2word(f3.10_txt$countries_in_range))` countries reported yields of between 3.3% and 4.0%, which is what would be expected in household contacts of people with bacteriologically confirmed TB (`r ref_lnk("7")`): `r sub("Central", "the Central",knitr::combine_words(f3.10_txt_countries$country, oxford_comma=FALSE))`. The wide variations in other countries probably reflects differences in the coverage of screening for eligible individuals, the diagnostic algorithms being used and the completeness of reporting. 
+
+
+### `r anch("Fig. 3.10")`<span class="red">Fig. 3.10</span> Percentage of household contacts diagnosed with TB disease among those screened, by WHO region, `r report_year - 1`
+<div class="subhead">Each dot represents a country. Put cursor over a dot to see the country name. The shaded line indicates the confidence interval of estimates of TB prevalence among contacts of people with bacteriologically confirmed TB (`r ref_lnk("7")`).</div>
+
+```{r fig_3.10, fig.alt="Panel plot showing percentage household contacts with TB disease among those screened by WHO region"}
+
+f3.10_plot <- f3.10_data |> 
+  
+  ggplot(aes(x=newinc_con_screen, y=pct_tb)) +
+  
+  geom_point(size=3, colour = "#ff748c") +
+  
+  scale_x_log10(name="Contacts screened for TB (log scale)",
+                     labels = function(i){gtbreport::int_spacer(i)}) +
+  
+  scale_y_log10(name = "% contacts with TB  (log scale)",
+                     labels = function(i){gtbreport::ftb(i)}) +
+  
+  expand_limits(y = c(0, 100)) +
+  
+  # Add a shaded box to highlight the expected yield
+  annotate("rect", xmin = 1, xmax = max(f3.10_data$newinc_con_screen)*1.1, ymin = 3.3, ymax = 4,
+           colour = "#EEEEEE", alpha = 0.2) +
+
+  annotate('text', x = 5, y = 6, label = '3.3% - 4.0%', size = 3) +
+  
+  geom_hline(yintercept=3.3, linetype="dashed", color = "red") +
+  geom_hline(yintercept=4, linetype="dashed", color = "red") +
+
+
+  facet_wrap( ~ entity, ncol = 3) +
+  
+  theme_bw() +  # Adds a panel border for Dennis
+
+  theme_gtb() +
+  
+  # remove legend caused by the ribbon fill
+  theme(legend.position="none") +
+  
+  # Get rid of x-axis line so as not to overwrite panel borders
+  theme(axis.line.x = ggplot2::element_blank())
+
+output_ggplot(f3.10_plot, f3.10_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_10_afr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_10_amr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_10_sear"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_10_eur"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_10_emr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_10_wpr"></div>
+</div>
+</div>
+
+<hr />
+<br />
+
+In 2021 or 2022 (or both), `r nrow(f3.11_data)` countries reported results from active TB case finding among risk groups other than household contacts; these groups included people living with HIV, incarcerated people, miners, migrants, people with diabetes, health care workers and people living in informal urban settings. The ratio of people screened to estimated TB incidence differed markedly among reporting countries, probably reflecting variation in policy, coverage and completeness of reporting (`r lnk("Fig. 3.11")`). In four countries (Cameroon, China, India and Thailand), the number of people screened exceeded 1 million in one year. Chest radiography was included in screening algorithms for at least one of the subpopulations being screened in most countries (with eight exceptions). In 42 subpopulations for which chest radiography was used, the diagnostic yield varied from 0% to 11% (median: 0.8%).
+
+
+### `r anch("Fig. 3.11")`<span class="red">Fig. 3.11</span> Active TB case finding in selected countries, `r report_year - 2`&#8211;`r report_year - 1`
+<div class="subhead">Data for the most recent year available are shown for each country (either 2021 or 2022).</div>
+
+
+```{r fig_3.11, fig.alt="Map showing ratio of active case finding to estimated incidence number"}
+
+f3.11_plot <- f3.11_data |> 
+  
+  whomap(colours = brewer.pal(5, "Greens"), 
+         legend.title = "Ratio of people screened for TB\nover estimated number of TB cases",
+         na.col = "white",
+         water.col = "white",
+         legend.pos = c(0.08, 0.26))
+
+output_ggplot(f3.11_plot, f3.11_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<hr />
+<br />
+
+## 3.5 Tests for TB infection
+
+Tests for TB infection can help to target TPT to people who can gain the most benefit from it. In `r report_year - 1`, `r f3.12_data |> filter(var %in% c("Tuberculin Skin Tests (TST) only", "Interferon Gamma Release Assays (IGRA) +/- TST")) |> nrow()` countries reported using tuberculin skin tests (TST) or interferon gamma release assays (IGRA) in either the public or private sectors to deliver TPT to populations at risk (`r lnk("Fig. 3.12")`).  A further `r f3.12_data |> filter(var=="Antigen-based Skin Tests (TBST) +/-TST +/-IGRA") |> nrow() |> int2word()` countries reported using antigen-based skin tests in addition to IGRA or TST. Of the `r f3.12_data |> filter(var=="Not used") |> nrow()` countries reporting no use of tests for TB infection, `r f3.12_data |> filter(var=="Not used" & g_whoregion == 'AFR') |> nrow()` were in the WHO African Region.
+
+### `r anch("Fig. 3.12")`<span class="red">Fig. 3.12</span> Diagnostic tests used for TB infection, by country, `r report_year - 1`
+
+```{r fig_3.12, fig.alt="Map showing diagnostic tests in use for TB infection"}
+
+f3.12_plot <- f3.12_data |> 
+  
+  whomap(colours = c("#40bf73", "#008dc9", "#bd53bd", "#f4a81d"), 
+         legend.title = "Diagnostic tests used",
+         na.col = "white",
+         water.col = "white",
+         legend.pos = c(0.08, 0.26))
+
+output_ggplot(f3.12_plot, f3.12_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<hr />
+<br />
+
+## 3.6 TB infection prevention and control
+
+Starting effective treatment as soon as possible after a diagnosis of TB is a key administrative measure to strengthen TB IPC. Six countries reported data on the interval between TB diagnosis and start of treatment in 18 patient cohorts between 2020 and 2022 (`r lnk("Table 3.1")`).  In patients without multidrug-resistant or rifampicin-resistant TB (MDR/RR-TB) or with an unknown drug resistance pattern, the mean interval ranged from 2 to 8.6 days (median 0–3 days). The delay was longer in people with MDR/RR-TB, with a mean of 14&#8211;112 days (median 12–97 days). 
+
+
+### `r anch("Table 3.1")`<span class="red">Table 3.1</span> Interval between TB diagnosis and start of treatment, selected countries
+
+```{r table_3.1}
+
+# Create a table object using kable
+table_header <- c('Country',
+                  'Source',
+                  'Year',
+                  'Number with MDR/RR-TB',
+                  'Number with no known rifampicin resistance',
+                  'Number with unknown resistance pattern',
+                  'Mean days between TB diagnosis and start of treatment',
+                  'Median days between TB diagnosis and start of treatment')
+
+knitr::kable(t3.1_data,
+             format = "html",
+             col.names = table_header,
+             align = 'lccccccc',
+             escape = FALSE,
+             # Add a table ID so that it can be styled using extra CSS in Sitefinity
+             table.attr = "id='time_to_tx_table'")
+
+
+```
+
+<hr />
+<br />
+
+The risk of TB among health care workers relative to the risk in the general adult population is one of the indicators that WHO recommends for measuring the impact of interventions for TB IPC in health care facilities. If effective prevention measures are in place, the risk ratio for TB in health care workers compared with the general adult population should be close to 1. In `r report_year - 1`, `r int_spacer(f3.13_txt$tot_hcw_tb)` health care workers from `r f3.13_txt$countries_hcw_tb` countries were reported to have been diagnosed with TB. The ratio of the TB notification rate among health care workers to the general adult population was greater than 1 in `r f3.13_txt$countries_nrr` countries that reported five or more TB cases among health care workers (`r lnk("Fig. 3.13")`).
+
+### `r anch("Fig. 3.13")`<span class="red">Fig. 3.13</span> Notification rate ratio of TB among health care workers compared with the adult population, by country, `r report_year - 1`
+
+```{r fig_3.13, fig.alt="Map showing ratio of TB notification rates among health care workers to those among the adult population"}
+
+f3.13_plot <- f3.13_data |> 
+  
+  whomap(colours = rev(brewer.pal(4, "Spectral")),
+         legend.title = "Notification rate ratio",
+         na.col = "white",
+         water.col = "white")
+
+output_ggplot(f3.13_plot, f3.13_data, show_static=TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<hr />
+<br />
+
+## 3.7 Bacille Calmette-Guérin vaccination
+
+Bacille Calmette-Guérin (BCG) vaccination is recommended as part of national childhood immunization programmes, in line with a country’s TB epidemiology (`r ref_lnk("8")`). However, global coverage dropped from `r f3.14_txt$bcg_cov_2019`% in 2019 to `r f3.14_txt$bcg_cov_2021`% in `r report_year - 2`, probably due to disruptions to health services caused by the COVID-19 pandemic. There was a recovery back to `r f3.14_txt$bcg_cov_2022`%  in 2022 (`r lnk("Fig. 3.14")`) (`r ref_lnk("9")`).
+
+
+### `r anch("Fig. 3.14")`<span class="red">Fig. 3.14</span> BCG vaccination coverage in infants,^a^ globally and by WHO region 2015&#8211;`r report_year-1`
+
+```{r fig_3.14, fig.alt="Panel plot showing BCG immunisation coverage globally and by WHO regions"}
+
+f3.14_plot <- f3.14_data |> 
+
+  ggplot(aes(x=year, y=bcg_coverage)) +
+
+  # # Add shaded box to highlight the covid years
+  # annotate("rect", xmin = 2019.5, xmax = 2021.5, ymin = 60, ymax = 100, 
+  #          colour = "#EEEEEE", alpha = 0.1) +
+  
+  geom_line(size = 1.5, colour = "slateblue4") +
+
+  scale_x_continuous(name="",
+                     breaks = c(2015:report_year-1)) +
+  scale_y_continuous(name = "BCG coverage (%)") +
+
+  expand_limits(y = 60) +
+  
+
+  facet_wrap( ~ entity, ncol = 4) +
+
+  theme_gtb() +
+
+  # Get rid of annoying x-axis line and ticks
+  theme(axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = element_blank())
+
+
+output_ggplot(f3.14_plot, f3.14_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_3_14_global"></div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_14_afr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_14_amr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_14_sear"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_3_14_eur"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_14_emr"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_3_14_wpr"></div>
+</div>
+</div>
+
+<div class="footnote">^a^ Data for `r report_year - 1` were reported by `r f3.14_txt_rep_glob$rep` out of `r f3.14_txt_rep_glob$all` WHO Member States (`r filter(f3.14_txt_rep_reg, g_whoregion=="AFR")["rep"]`/`r filter(f3.14_txt_rep_reg, g_whoregion=="AFR")["all"]` in the WHO African Region, `r filter(f3.14_txt_rep_reg, g_whoregion=="AMR")["rep"]`/`r filter(f3.14_txt_rep_reg, g_whoregion=="AMR")["all"]` in the Region of the Americas, `r filter(f3.14_txt_rep_reg, g_whoregion=="SEA")["rep"]`/`r filter(f3.14_txt_rep_reg, g_whoregion=="SEA")["all"]` in the South-East Asia Region, `r filter(f3.14_txt_rep_reg, g_whoregion=="EUR")["rep"]`/`r filter(f3.14_txt_rep_reg, g_whoregion=="EUR")["all"]` in the European Region, `r filter(f3.14_txt_rep_reg, g_whoregion=="EMR")["rep"]`/`r filter(f3.14_txt_rep_reg, g_whoregion=="EMR")["all"]` in the Eastern Mediterranean Region and `r filter(f3.14_txt_rep_reg, g_whoregion=="WPR")["rep"]`/`r filter(f3.14_txt_rep_reg, g_whoregion=="WPR")["all"]` in the Western Pacific Region).</div>
+
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. WHO consolidated guidelines on tuberculosis. Module 1: Prevention – Tuberculosis preventive treatment. Geneva: World Health Organization; 2020 (https://iris.who.int/handle/10665/331170).
+
+2. WHO consolidated guidelines on tuberculosis. Module 2: Screening – Systematic screening for tuberculosis disease. Geneva: World Health Organization; 2021 (https://iris.who.int/handle/10665/340255).
+
+3. WHO guidelines on tuberculosis infection prevention and control. 2019 update. Geneva: World Health Organization; 2019. (https://iris.who.int/handle/10665/311259).
+
+4. Implementing the End TB Strategy: the essentials, 2022 update. Geneva: World Health Organization; 2022. (https://iris.who.int/handle/10665/365364).
+
+5. United Nations General Assembly. 75th session. Item 10 of the agenda. Implementation of the Declaration of Commitment on HIV/AIDS and the political declarations on HIV/AIDS. Draft resolution submitted by the President of the General Assembly. Political Declaration on HIV and AIDS: Ending Inequalities and Getting on Track to End AIDS by 2030 (A/75/L.95). New York: United Nations; 2018 (https://www.un.org/pga/75/wp-content/uploads/sites/100/2021/06/2107241E1.pdf).
+
+6. UNAIDS epidemiological estimates, 2023 (https://aidsinfo.unaids.org/).
+
+7. Fox GJ, Barry SE, Britton WJ, Marks GB. Contact investigation for tuberculosis: a systematic review and meta-analysis. European Respiratory Journal. 2013 Jan 1;41(1):140–56. (https://erj.ersjournals.com/content/41/1/140).
+
+8. Weekly Epidemiological Record, 2018, vol. 93, 08, 73 - 96. Geneva: World Health Organization; 2018. (https://iris.who.int/handle/10665/260306).
+
+9. The WHO Global Health Observatory (https://www.who.int/data/gho/data/indicators/indicator-details/GHO/bcg-immunization-coverage-among-1-year-olds-(-)). Data download `r attr(f3.14_data, which = "timestamp") |> format("%d %B %Y")`.
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm")))) 
+```
+
+<script type="text/javascript">
+
+/* JSON data objects for the figures */
+
+var fig_3_1_data = `r f3.1_data |> pivot_wider(names_from = "TPT_category", id_cols = "year", values_from = "how_many") |> toJSON("rows")`;
+
+var fig_3_6_data = `r f3.6_data |> mutate(size=10) |>  select(-newinc_con_prevtx_cmplt) |> toJSON("rows")`;
+
+var fig_3_7_data = `r f3.7_data |> toJSON("rows")`;
+
+var fig_3_8_data = `r f3.8_data |> toJSON("rows")`;
+
+var fig_3_9_data = `r f3.9_data |> mutate(size=10) |>  select(-hiv_all_tpt_completed) |> toJSON("rows")`;
+
+var fig_3_10_data = `r f3.10_data |> mutate(size=10) |>  select(-newinc_con_tb) |> toJSON("rows")`;
+
+var fig_3_14_data = `r f3.14_data |> arrange(entity, year) |> toJSON("rows")`;
+
+</script>
+
+
+```{js, echo=FALSE}
+
+/* Functions to create the figures */
+
+function createFig_3_1() {
+        $("#fig_3_1").kendoChart({
+            dataSource: {
+                data: fig_3_1_data
+            },
+            legend: {
+                position: "bottom"
+            },
+            seriesDefaults: {
+                type: "column",
+                stack: true,
+                gap: 0.2,
+                tooltip: {
+                    visible: true,
+                    template: "#= series.name #: (#= category #): #= num_spacer(value)#"
+                }
+            },
+            series: [{
+                name: "People living with HIV",
+                field: "hiv_tpt",
+                color: "#ffc425"
+                }, {
+                name: "Household contacts aged <5 years",
+                field: "house_con04_tpt",
+                color: "#9fcd25"
+                }, {
+                name: "Household contacts aged \u22655 years",
+                field: "house_con5plus_tpt",
+                color: "black"
+            }],
+            valueAxis: {
+                labels: {
+                    template: "#= kendo.format('{0}',value/1000000) #"
+                },
+                title: {
+                    text: "Number of people (millions)"
+                },
+                line: {
+                    visible: false
+                }
+            },
+            categoryAxis: {
+                field: "year",
+                labels: {
+                    rotation: "auto"
+                },
+                majorGridLines: {
+                    visible: false
+                }
+            }
+        });
+}
+
+
+
+function createFig_3_6_3_9(fig_ID, data, filter, tpt_start_field_name) {
+
+  // Filter the dataset on the entity variable
+  dataJSON = data.filter( element => element.entity == filter);
+
+  $(fig_ID).kendoChart({
+        dataSource: dataJSON,
+        chartArea: {
+            height: 250
+        },  
+        title: {
+                  text: filter,
+                  color: "black",
+                  font: "bold 14px  Arial,Helvetica,sans-serif"
+              },  
+        legend: {
+            // hide the legend
+            visible: false
+        },
+        series: [{
+        // Using bubble instead of scatter chart otherwise wouldn't be able to see 
+        // the country name in the tooltip. So had to fix a bubble size in the data
+        type: "bubble",
+        xField: tpt_start_field_name,
+        yField: "pct_completed",
+        categoryField: "country",
+        sizeField: "size",
+        maxSize: 10,
+        minSize: 10,
+            }],
+        yAxis: {
+            labels: {
+                template: "#= kendo.format('{0}', value) #"
+            },
+            title: {
+                text: "% contacts who completed TPT",
+                visible: true,
+                font: "12px  Arial,Helvetica,sans-serif"
+            },
+            line: {
+                visible: false
+            }
+        },
+        xAxis: {
+            type: "log",
+            min: 1.0,
+            majorGridLines: {
+                visible: false
+            },
+            labels: {
+                template: "#= kendo.format('{0}',axis_spacer(value)) #",
+                step: 2
+            },
+            title: {
+                text: "Contacts starting TPT\n(log scale)",
+                visible: true,
+                font: "12px  Arial,Helvetica,sans-serif"
+            }
+        },
+        tooltip: {
+				    visible: true,
+				    template: "#= category #, #= num_spacer(value.x)# started treatment, #= tb_format_pct(value.y)#% completed"
+			}
+    });
+}
+
+
+
+
+function createFig_3_7() {
+        $("#fig_3_7").kendoChart({
+            dataSource: {
+                data: fig_3_7_data
+            },
+            legend: {
+              // hide the legend
+              visible: false
+            },
+            seriesDefaults: {
+                type: "column",
+                gap: 0.2,
+                tooltip: {
+                    visible: true,
+                    template: "#= category #: #= num_spacer(value)#"
+                }
+            },
+            series: [{
+                name: "Number of people",
+                field: "how_many",
+                color: "#00008B"
+                }],
+            valueAxis: {
+                labels: {
+                    template: "#= kendo.format('{0}',value/1000000) #"
+                },
+                title: {
+                    text: "Number of people (millions)"
+                },
+                line: {
+                    visible: false
+                }
+            },
+            categoryAxis: {
+                field: "stage",
+                labels: {
+                    rotation: "auto"
+                },
+                majorGridLines: {
+                    visible: false
+                }
+            }
+        });
+}
+
+
+function createFig_3_8(fig_ID, data, filter) {
+
+  // Filter the dataset on the entity variable
+  dataJSON = data.filter( element => element.entity == filter);
+
+  $(fig_ID).kendoChart({
+        dataSource: dataJSON,
+        chartArea: {
+            height: 250
+        },  
+        title: {
+                  text: filter,
+                  color: "black",
+                  font: "bold 14px  Arial,Helvetica,sans-serif"
+              },  
+        legend: {
+            // hide the legend
+            visible: false
+        },
+        seriesDefaults: {
+            type: "line",
+            tooltip: {
+                visible: true,
+                template: "#= series.name #: (#= category #): #= num_spacer(value)#"
+            }
+        },
+        series: [{
+            name: "Newly enrolled on HIV treatment",
+            field: "hiv_tpt_new",
+            color: "red",
+    				dashType: "dash",
+            markers: {
+              size: 3
+            }
+            },{
+            name: "Currently on HIV treatment",
+            field: "hiv_tpt_all",
+            color: "blue",  
+            markers: {
+              size: 3
+            }
+            }],
+        valueAxis: {
+            labels: {
+                template: "#= axis_spacer(value/1e3) #"
+            },
+            title: {
+                text: "Number of people (thousands)",
+                visible: true,
+                font: "12px  Arial,Helvetica,sans-serif"
+            },
+            line: {
+                visible: false
+            }
+        },
+        categoryAxis: {
+            field: "year",
+            labels: {
+                step: 5
+            },
+            majorGridLines: {
+                visible: false
+            },
+            title: {
+                text: "Year",
+                visible: true,
+                font: "12px  Arial,Helvetica,sans-serif"
+            }
+        }
+    });
+}
+
+
+
+function createfig_3_10(fig_ID, data, filter) {
+
+  // Filter the dataset on the entity variable
+  dataJSON = data.filter( element => element.entity == filter);
+
+  $(fig_ID).kendoChart({
+        dataSource: dataJSON,
+        chartArea: {
+            height: 250
+        },  
+        title: {
+                  text: filter,
+                  color: "black",
+                  font: "bold 14px  Arial,Helvetica,sans-serif"
+              },  
+        legend: {
+            // hide the legend
+            visible: false
+        },
+        series: [{
+        // Using bubble instead of scatter chart otherwise wouldn't be able to see 
+        // the country name in the tooltip. So had to fix a bubble size in the data
+        type: "bubble",
+        xField: "newinc_con_screen",
+        yField: "pct_tb",
+        categoryField: "country",
+        sizeField: "size",
+        maxSize: 10,
+        minSize: 10,
+            }],
+        yAxis: {
+            type: "log",
+            min: 0.001,
+			      max: 150,
+			      axisCrossingValue: 0.001,
+            labels: {
+                template: "#= kendo.format('{0}', value) #"
+            },
+            title: {
+                text: "% contacts with TB\n(log scale)",
+                visible: true,
+                font: "12px  Arial,Helvetica,sans-serif"
+            },
+            line: {
+                visible: false
+            },
+            // Add horizontal line at between 3.3 and 4%
+        plotBands: [{ 
+            from: 3.3, 
+    				to: 4, 
+    				color: "#999999", 
+    				opacity: 0.5,
+    				label: {
+    				    text: "3.3% - 4.0%", 
+    				    position: "top", 
+    				    color: "#999999",
+    				    padding: {top:-16, left:5} 
+    				} 
+			    }]
+        },
+        xAxis: {
+            type: "log",
+            majorGridLines: {
+                visible: false
+            },
+            labels: {
+                template: "#= kendo.format('{0}',axis_spacer(value)) #",
+                step: 2
+            },
+            title: {
+                text: "Contacts screened for TB\n(log scale)",
+                visible: true,
+                font: "12px  Arial,Helvetica,sans-serif"
+            }
+        },
+        tooltip: {
+				    visible: true,
+				    template: "#= category #, #= num_spacer(value.x)# screened, #= tb_format_pct(value.y)#% with TB"
+			}
+    });
+}
+
+
+function createFig_3_14(fig_ID, data, filter) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.entity == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: 250
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+				field: "bcg_coverage",
+				color: "#473c8b", 
+        markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				template: "#= category #: #= value.toPrecision(2) #%",
+			}
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "BCG coverage (%)",
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        max: 100,
+        min: 60
+			},
+			categoryAxis: {
+				field: "year",
+        labels: {
+					rotation: "auto"
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year"
+				}
+			}
+
+		});
+}
+
+
+```
+
+
+```{js, echo=FALSE}
+
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function() {
+  
+  createFig_3_1();
+  
+  createFig_3_7();
+
+  createFig_3_6_3_9("#fig_3_6_afr", fig_3_6_data, "African Region", "newinc_con_prevtx");
+  createFig_3_6_3_9("#fig_3_6_amr", fig_3_6_data, "Region of the Americas", "newinc_con_prevtx");
+  createFig_3_6_3_9("#fig_3_6_sear", fig_3_6_data, "South-East Asia Region", "newinc_con_prevtx");
+  createFig_3_6_3_9("#fig_3_6_eur", fig_3_6_data, "European Region", "newinc_con_prevtx");
+  createFig_3_6_3_9("#fig_3_6_emr", fig_3_6_data, "Eastern Mediterranean Region", "newinc_con_prevtx");
+  createFig_3_6_3_9("#fig_3_6_wpr", fig_3_6_data, "Western Pacific Region", "newinc_con_prevtx");
+  
+  
+  createFig_3_8("#fig_3_8_global", fig_3_8_data, "Global");
+  createFig_3_8("#fig_3_8_afr", fig_3_8_data, "African Region");
+  createFig_3_8("#fig_3_8_amr", fig_3_8_data, "Region of the Americas");
+  createFig_3_8("#fig_3_8_sear", fig_3_8_data, "South-East Asia Region");
+  createFig_3_8("#fig_3_8_eur", fig_3_8_data, "European Region");
+  createFig_3_8("#fig_3_8_emr", fig_3_8_data, "Eastern Mediterranean Region");
+  createFig_3_8("#fig_3_8_wpr", fig_3_8_data, "Western Pacific Region");
+  
+  createFig_3_6_3_9("#fig_3_9_afr", fig_3_9_data, "African Region", "hiv_all_tpt_started");
+  createFig_3_6_3_9("#fig_3_9_amr", fig_3_9_data, "Region of the Americas", "hiv_all_tpt_started");
+  createFig_3_6_3_9("#fig_3_9_sear", fig_3_9_data, "South-East Asia Region", "hiv_all_tpt_started");
+  createFig_3_6_3_9("#fig_3_9_eur", fig_3_9_data, "European Region", "hiv_all_tpt_started");
+  createFig_3_6_3_9("#fig_3_9_emr", fig_3_9_data, "Eastern Mediterranean Region", "hiv_all_tpt_started");
+  createFig_3_6_3_9("#fig_3_9_wpr", fig_3_9_data, "Western Pacific Region", "hiv_all_tpt_started");
+
+  createfig_3_10("#fig_3_10_afr", fig_3_10_data, "African Region");
+  createfig_3_10("#fig_3_10_amr", fig_3_10_data, "Region of the Americas");
+  createfig_3_10("#fig_3_10_sear", fig_3_10_data, "South-East Asia Region");
+  createfig_3_10("#fig_3_10_eur", fig_3_10_data, "European Region");
+  createfig_3_10("#fig_3_10_emr", fig_3_10_data, "Eastern Mediterranean Region");
+  createfig_3_10("#fig_3_10_wpr", fig_3_10_data, "Western Pacific Region");
+  
+  createFig_3_14("#fig_3_14_global", fig_3_14_data, "Global");
+  createFig_3_14("#fig_3_14_afr", fig_3_14_data, "African Region");
+  createFig_3_14("#fig_3_14_amr", fig_3_14_data, "Region of the Americas");
+  createFig_3_14("#fig_3_14_sear", fig_3_14_data, "South-East Asia Region");
+  createFig_3_14("#fig_3_14_eur", fig_3_14_data, "European Region");
+  createFig_3_14("#fig_3_14_emr", fig_3_14_data, "Eastern Mediterranean Region");
+  createFig_3_14("#fig_3_14_wpr", fig_3_14_data, "Western Pacific Region");
+
+});
+
+```
+
+
+

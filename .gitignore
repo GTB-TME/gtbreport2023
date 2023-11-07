@@ -1,0 +1,58 @@
+# gtbr2023 - project specific files
+README.html
+
+
+# Ignore MAC OS files
+.DS_Store
+Icon
+
+# Make sure any folder called "local" is ignored
+local/
+
+# R and RStudio files
+.Rhistory
+.Rapp.history
+.RData
+.RDataTmp
+.Ruserdata
+*.Rproj
+.Rproj.user/
+.Renviron
+/*.Rcheck/
+/*.tar.gz
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+
+# translation temp files
+po/*~
+
+# RStudio Connect folder
+rsconnect/
+
+
+# disaggregation & drtb temp data
+disaggregation/html/
+disaggregation/output/
+disaggregation/tmpdata/
+disaggregation/R/02children/plots/
+
+drtb/data/
+drtb/html/
+drtb/outdata/
+drtb/plots/
+drtb/scripts/logs/
+drtb/stan/*Q.stan
+drtb/stout/
+drtb/tmpdata/
+drtb/prevplots/plots/*.pdf
+
+

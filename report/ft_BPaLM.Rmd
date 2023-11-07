@@ -1,0 +1,245 @@
+--- 
+title: "Featured topic: new drug-resistant TB treatment (BPaLM)" 
+author: "Irwin Law" 
+date: "`r Sys.Date()`" 
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Do not include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Do not write figure captions
+    fig_caption: FALSE
+    css: columns.css
+    # to save intermediate .png
+    keep_md: true    
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: False
+
+--- 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,  fig.align = "center"}
+# Set chunk options.
+# Results "asis" is useful to output markdown from a function
+# Suppress messages, warnings and also the ## at the beginning of printed text
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      error = TRUE)  # TEMP error=TRUE for debugging!
+
+# Clear the decks ----
+rm(list=ls())
+
+
+# Load packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+library(ggplot2)
+library(dplyr)
+library(gtbreport)
+library(here)
+
+library(jsonlite)
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ft_BPaLM")
+save_csv = TRUE
+save_pdf = TRUE
+save_cairo = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+# New treatment for drug-resistant tuberculosis
+
+_Draft! Prepared `r Sys.time()`` _
+
+
+Effective treatment of tuberculosis (TB), including its drug-resistant forms, relies on the use of several medicines administered in combination for an adequate duration. For many years, conventional treatment regimens for rifampicin-resistant TB (RR-TB) and multidrug-resistant TB (MDR-TB, defined as TB that is resistant to both rifampicin and isoniazid), collectively referred to as MDR/RR-TB, were lengthy and arduous, and included painful injectable medicines. Compared with treatments for drug-susceptible forms of TB, the duration of treatment for RR-TB was about three times longer, with a much higher pill burden and a much higher risk of adverse events, both during treatment and after completion. Treatment was even more difficult for people with RR-TB and resistance to a fluoroquinolone, known as pre-extensively drug-resistant TB (pre-XDR-TB), and those with extensively drug-resistant TB (XDR-TB, defined as pre-XDR-TB plus resistance to at least one of either bedaquiline or linezolid). 
+
+Owing to the pressing need for more effective treatment regimens for people with RR-TB and MDR-TB, as well as those with even more extensive patterns of drug resistance, various studies and initiatives to test more effective and novel treatment regimens, including newer and repurposed medicines, have been implemented since the 1990s. The World Health Organization (WHO) has regularly evaluated new evidence on the use of specific drug compositions and combinations of regimens of different durations. Most recently, new evidence has resulted in a major breakthrough in the treatment that can be recommended for people with MDR/RR-TB and pre-XDR-TB (<span class="refs">[1](#refs)</span>).
+
+The key change in the latest WHO recommendations is the addition and prioritization of a new all-oral 6-month regimen. For people with MDR/RR-TB, the regimen comprises bedaquiline (B), pretomanid (Pa), linezolid (L) and moxifloxacin (M), and is referred to as BPaLM; for people who have pre-XDR-TB, the regimen can be used without moxifloxacin (BPaL).  The shorter duration, lower cost, lower pill burden and high efficacy of this novel regimen should enable much better treatment and treatment outcomes for people with MDR/RR-TB or pre-XDR-TB, while also helping health systems to provide care for more people, even in the context of setbacks associated with the COVID-19 pandemic.   
+
+The evidence that was used as the basis for the new recommendations came from a randomized controlled trial: TB-PRACTECAL (<span class="refs">[2](#refs)</span>). This trial showed much-improved treatment success rates with the 6-month BPaLM regimen (89%) compared with previous standard-of-care regimens (52%), as well as lower levels of treatment failure, death and loss to follow-up. A second trial, called ZeNiX-TB (<span class="refs">[3](#refs)</span>), randomized people with RR-TB to receive regimens of bedaquiline, pretomanid and daily linezolid at four different dosing schedules. Data from this trial as well as TB-PRACTECAL suggested that a linezolid dose of 600 mg maintains high efficacy but leads to fewer adverse events. 
+
+There are some limitations to the use of the BPaLM/BPaL regimen. The lack of safety data on pretomanid in children aged under 14 years means that the recommendation currently applies only to adults and adolescents aged 14 years and above. Although the recommendation applies to all people, regardless of HIV status, some caution is needed when enrolling patients with CD4 counts lower than 100 cells/mm3. The safety of pretomanid during pregnancy and breastfeeding is also unclear, and other treatment options should be used for pregnant and breastfeeding women. The BPaLM/BPaL regimen is suitable for most forms of TB but is not recommended for extrapulmonary TB involving the central nervous system (CNS), or osteoarticular and disseminated (miliary) TB.
+
+On World TB Day 2023, WHO, civil society, technical partners assisting countries and the donor community joined forces to issue a strong “Call to Action” for a rapid expansion in access to the BPaLM/BPaL regimen (<span class="refs">[4](#refs)</span>). Many countries are taking rapid steps to implement this new regimen – a situation that is reflected in the steep increase in orders of pretomanid from the Stop TB Partnership’s Global Drug Facility (<span class="red">[Fig. 1](#fig--1)</span>). A global BPaLM accelerator platform was announced at the time of the release of the guidelines; WHO established this platform as aa forum for information sharing and technical discussions to address challenges in implementing the BPaLM/BPaL regimen (<span class="refs">[5](#refs)</span>). 
+
+
+### <span style="color:#F21905">Fig. 1</span> Number of pretomanid treatments requested, 2020&#8211;2023 (as of 27 June 2023)
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE,  fig.align = "left", fig.width=12}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Create figure 1
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# data from GDF, STP ----
+#  just enter it here manually
+
+year <- c(2020, 2021, 2022, 2023)
+
+figdata <- c(691, 731, 4427, 30388)
+
+drtb <- data.frame(year, figdata)
+f1_data <- drtb
+
+# Plot research funding as a simple bar chart ----
+
+f1_plot <- drtb %>%
+  
+  filter(year < 2024 & year >= 2015) %>%
+  
+  ggplot(aes(x=year, y=figdata)) +
+  
+  geom_bar(stat = "identity", fill = "pink") +
+  
+  scale_x_continuous(name="Year delivery requested", breaks = c(2020, 2021, 2022, 2023)) +
+  
+  scale_y_continuous(name = "Number of pretomanid treatments requested",
+                     limits = c(0,35000)) +
+  
+  theme_gtb()
+
+output_ggplot(f1_plot, f1_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+<div id="fig_1"></div>
+
+<div class="footnote">Source: Global Drug Facility, Stop TB Partnership (<span class="refs">[6](#refs)</span>).  
+</left>
+</div>
+
+
+
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1.	WHO consolidated guidelines on tuberculosis. Module 4: Treatment – drug-resistant tuberculosis treatment, 2022 update. Geneva: World Health Organization; 2022 (https://iris.who.int/handle/10665/365308).
+
+2.	Nyang'wa BT, Berry C, Kazounis E, Motta I, Parpieva N, Tigay Z et al. A 24-week, all-oral regimen for rifampin-resistant tuberculosis. N Engl J Med. 2022;387:2331-43. doi: https://doi.org/10.1056/NEJMoa2117166.
+
+3.	Conradie F, Bagdasaryan TR, Borisov S, Howell P, Mikiashvili L, Ngubane N et al. Bedaquiline–pretomanid–linezolid regimens for drug-resistant tuberculosis. N Engl J Med. 2022;387:810–23. doi: https://doi.org/10.1056/NEJMoa2119430.
+
+4.	Call to action: shorter and more effective treatment for all people suffering from drug-resistant TB. Geneva: World Health Organization; 2023 (https://www.who.int/publications/m/item/call-to-action--shorter-an-d-more-effective-treatment-for-all-people-suffering-from-drug-resistant-tb).
+
+5.	WHO announces landmark changes in treatment of drug-resistant tuberculosis. Geneva: World Health Organization; 2022 (https://www.who.int/news/item/15-12-2022-who-announces-landmark-changes-in-treatment-of-drug-resistant-tuberculosis).
+
+6.	Global Drug Facility [website]. Geneva: Stop TB Partnership; 2023 (https://www.stoptb.org/facilitate-access-to-tb-drugs-diagnostics/global-drug-facility-gdf).
+
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+/* JSON data objects for the figures */
+
+var fig_DRTB_data = `r drtb %>% filter(year %in% 2020:2023) %>% toJSON("rows")`;
+
+</script>
+
+
+```{js, echo=FALSE}
+/* Functions to create the figures */
+function createFig_DRTB() {
+		$("#fig_1").kendoChart({
+			dataSource: fig_DRTB_data,
+			chartArea: {
+				height: 400
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "column"
+			},
+			series: [{
+				field: "figdata",
+				color: "pink",
+				gap: 0.1
+			}],
+			valueAxis: {
+				labels: {
+					template: "#= axis_spacer(value) #"
+				},
+				title: {
+					text: "Number of pretomanid treatments requested"
+				},
+				line: {
+					visible: false
+				},
+				max: 31000,
+                    line: {
+                        visible: false
+                    },
+
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: "auto"
+				},
+					title: {
+					text: "Year delivery requested"
+				},
+				majorGridLines: {
+					visible: false
+				},
+				plotBands: [{ 
+					from: 2020, 
+					to: 2023, 
+					color: "grey",
+					opacity: 0.5
+				}]
+			},
+			tooltip: {
+				visible: true,
+				template: "Number of treatments requested (#= category #): #= num_spacer(value) #"
+			}
+		});
+}
+
+```
+
+```{js, echo=FALSE}
+/* Create the figures after the document has been loaded */
+
+$(document).ready(function () {
+                  createFig_DRTB();
+
+}); 
+
+```
+

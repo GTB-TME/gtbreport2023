@@ -1,0 +1,226 @@
+country,iso2,year,g_whoregion,newrel_prisoners
+Anguilla,AI,2018,AMR,
+Anguilla,AI,2019,AMR,
+Anguilla,AI,2020,AMR,
+Anguilla,AI,2021,AMR,
+Anguilla,AI,2022,AMR,0
+Antigua and Barbuda,AG,2018,AMR,0
+Antigua and Barbuda,AG,2019,AMR,0
+Antigua and Barbuda,AG,2020,AMR,0
+Antigua and Barbuda,AG,2021,AMR,0
+Antigua and Barbuda,AG,2022,AMR,0
+Argentina,AR,2018,AMR,254
+Argentina,AR,2019,AMR,234
+Argentina,AR,2020,AMR,285
+Argentina,AR,2021,AMR,378
+Argentina,AR,2022,AMR,486
+Aruba,AW,2018,AMR,
+Aruba,AW,2019,AMR,0
+Aruba,AW,2020,AMR,
+Aruba,AW,2021,AMR,
+Aruba,AW,2022,AMR,
+Bahamas,BS,2018,AMR,4
+Bahamas,BS,2019,AMR,1
+Bahamas,BS,2020,AMR,0
+Bahamas,BS,2021,AMR,0
+Bahamas,BS,2022,AMR,0
+Barbados,BB,2018,AMR,1
+Barbados,BB,2019,AMR,0
+Barbados,BB,2020,AMR,0
+Barbados,BB,2021,AMR,0
+Barbados,BB,2022,AMR,
+Belize,BZ,2018,AMR,5
+Belize,BZ,2019,AMR,3
+Belize,BZ,2020,AMR,0
+Belize,BZ,2021,AMR,2
+Belize,BZ,2022,AMR,7
+Bermuda,BM,2018,AMR,0
+Bermuda,BM,2019,AMR,0
+Bermuda,BM,2020,AMR,0
+Bermuda,BM,2021,AMR,0
+Bermuda,BM,2022,AMR,0
+Bolivia (Plurinational State of),BO,2018,AMR,299
+Bolivia (Plurinational State of),BO,2019,AMR,328
+Bolivia (Plurinational State of),BO,2020,AMR,266
+Bolivia (Plurinational State of),BO,2021,AMR,347
+Bolivia (Plurinational State of),BO,2022,AMR,415
+Brazil,BR,2018,AMR,9335
+Brazil,BR,2019,AMR,9838
+Brazil,BR,2020,AMR,8959
+Brazil,BR,2021,AMR,8306
+Brazil,BR,2022,AMR,8704
+British Virgin Islands,VG,2018,AMR,
+British Virgin Islands,VG,2019,AMR,
+British Virgin Islands,VG,2020,AMR,
+British Virgin Islands,VG,2021,AMR,
+British Virgin Islands,VG,2022,AMR,
+Canada,CA,2018,AMR,
+Canada,CA,2019,AMR,17
+Canada,CA,2020,AMR,8
+Canada,CA,2021,AMR,4
+Canada,CA,2022,AMR,
+Cayman Islands,KY,2018,AMR,0
+Cayman Islands,KY,2019,AMR,
+Cayman Islands,KY,2020,AMR,0
+Cayman Islands,KY,2021,AMR,
+Cayman Islands,KY,2022,AMR,0
+Chile,CL,2018,AMR,39
+Chile,CL,2019,AMR,54
+Chile,CL,2020,AMR,31
+Chile,CL,2021,AMR,15
+Chile,CL,2022,AMR,62
+Colombia,CO,2018,AMR,783
+Colombia,CO,2019,AMR,965
+Colombia,CO,2020,AMR,770
+Colombia,CO,2021,AMR,1393
+Colombia,CO,2022,AMR,1241
+Costa Rica,CR,2018,AMR,32
+Costa Rica,CR,2019,AMR,35
+Costa Rica,CR,2020,AMR,
+Costa Rica,CR,2021,AMR,20
+Costa Rica,CR,2022,AMR,57
+Cuba,CU,2018,AMR,60
+Cuba,CU,2019,AMR,70
+Cuba,CU,2020,AMR,37
+Cuba,CU,2021,AMR,
+Cuba,CU,2022,AMR,122
+Curaçao,CW,2018,AMR,
+Curaçao,CW,2019,AMR,
+Curaçao,CW,2020,AMR,
+Curaçao,CW,2021,AMR,
+Curaçao,CW,2022,AMR,
+Dominica,DM,2018,AMR,
+Dominica,DM,2019,AMR,0
+Dominica,DM,2020,AMR,
+Dominica,DM,2021,AMR,
+Dominica,DM,2022,AMR,0
+Dominican Republic,DO,2018,AMR,280
+Dominican Republic,DO,2019,AMR,351
+Dominican Republic,DO,2020,AMR,280
+Dominican Republic,DO,2021,AMR,376
+Dominican Republic,DO,2022,AMR,515
+Ecuador,EC,2018,AMR,637
+Ecuador,EC,2019,AMR,928
+Ecuador,EC,2020,AMR,1124
+Ecuador,EC,2021,AMR,856
+Ecuador,EC,2022,AMR,918
+El Salvador,SV,2018,AMR,2006
+El Salvador,SV,2019,AMR,1328
+El Salvador,SV,2020,AMR,952
+El Salvador,SV,2021,AMR,628
+El Salvador,SV,2022,AMR,1017
+Grenada,GD,2018,AMR,0
+Grenada,GD,2019,AMR,0
+Grenada,GD,2020,AMR,0
+Grenada,GD,2021,AMR,0
+Grenada,GD,2022,AMR,0
+Guatemala,GT,2018,AMR,210
+Guatemala,GT,2019,AMR,243
+Guatemala,GT,2020,AMR,246
+Guatemala,GT,2021,AMR,254
+Guatemala,GT,2022,AMR,296
+Guyana,GY,2018,AMR,8
+Guyana,GY,2019,AMR,7
+Guyana,GY,2020,AMR,7
+Guyana,GY,2021,AMR,18
+Guyana,GY,2022,AMR,35
+Haiti,HT,2018,AMR,246
+Haiti,HT,2019,AMR,
+Haiti,HT,2020,AMR,356
+Haiti,HT,2021,AMR,332
+Haiti,HT,2022,AMR,512
+Honduras,HN,2018,AMR,238
+Honduras,HN,2019,AMR,211
+Honduras,HN,2020,AMR,280
+Honduras,HN,2021,AMR,164
+Honduras,HN,2022,AMR,187
+Jamaica,JM,2018,AMR,0
+Jamaica,JM,2019,AMR,
+Jamaica,JM,2020,AMR,2
+Jamaica,JM,2021,AMR,
+Jamaica,JM,2022,AMR,
+Mexico,MX,2018,AMR,392
+Mexico,MX,2019,AMR,290
+Mexico,MX,2020,AMR,255
+Mexico,MX,2021,AMR,235
+Mexico,MX,2022,AMR,500
+Montserrat,MS,2018,AMR,
+Montserrat,MS,2019,AMR,0
+Montserrat,MS,2020,AMR,
+Montserrat,MS,2021,AMR,
+Montserrat,MS,2022,AMR,
+Nicaragua,NI,2018,AMR,58
+Nicaragua,NI,2019,AMR,83
+Nicaragua,NI,2020,AMR,44
+Nicaragua,NI,2021,AMR,54
+Nicaragua,NI,2022,AMR,84
+Panama,PA,2018,AMR,89
+Panama,PA,2019,AMR,
+Panama,PA,2020,AMR,
+Panama,PA,2021,AMR,126
+Panama,PA,2022,AMR,118
+Paraguay,PY,2018,AMR,437
+Paraguay,PY,2019,AMR,416
+Paraguay,PY,2020,AMR,370
+Paraguay,PY,2021,AMR,537
+Paraguay,PY,2022,AMR,617
+Peru,PE,2018,AMR,3243
+Peru,PE,2019,AMR,2814
+Peru,PE,2020,AMR,2410
+Peru,PE,2021,AMR,1989
+Peru,PE,2022,AMR,2468
+Puerto Rico,PR,2018,AMR,0
+Puerto Rico,PR,2019,AMR,0
+Puerto Rico,PR,2020,AMR,2
+Puerto Rico,PR,2021,AMR,1
+Puerto Rico,PR,2022,AMR,0
+Saint Kitts and Nevis,KN,2018,AMR,0
+Saint Kitts and Nevis,KN,2019,AMR,0
+Saint Kitts and Nevis,KN,2020,AMR,0
+Saint Kitts and Nevis,KN,2021,AMR,0
+Saint Kitts and Nevis,KN,2022,AMR,
+Saint Lucia,LC,2018,AMR,0
+Saint Lucia,LC,2019,AMR,0
+Saint Lucia,LC,2020,AMR,0
+Saint Lucia,LC,2021,AMR,0
+Saint Lucia,LC,2022,AMR,0
+Saint Vincent and the Grenadines,VC,2018,AMR,0
+Saint Vincent and the Grenadines,VC,2019,AMR,
+Saint Vincent and the Grenadines,VC,2020,AMR,0
+Saint Vincent and the Grenadines,VC,2021,AMR,
+Saint Vincent and the Grenadines,VC,2022,AMR,0
+Sint Maarten (Dutch part),SX,2018,AMR,0
+Sint Maarten (Dutch part),SX,2019,AMR,
+Sint Maarten (Dutch part),SX,2020,AMR,0
+Sint Maarten (Dutch part),SX,2021,AMR,0
+Sint Maarten (Dutch part),SX,2022,AMR,0
+Suriname,SR,2018,AMR,5
+Suriname,SR,2019,AMR,2
+Suriname,SR,2020,AMR,22
+Suriname,SR,2021,AMR,
+Suriname,SR,2022,AMR,
+Trinidad and Tobago,TT,2018,AMR,18
+Trinidad and Tobago,TT,2019,AMR,13
+Trinidad and Tobago,TT,2020,AMR,14
+Trinidad and Tobago,TT,2021,AMR,17
+Trinidad and Tobago,TT,2022,AMR,21
+Turks and Caicos Islands,TC,2018,AMR,0
+Turks and Caicos Islands,TC,2019,AMR,0
+Turks and Caicos Islands,TC,2020,AMR,
+Turks and Caicos Islands,TC,2021,AMR,0
+Turks and Caicos Islands,TC,2022,AMR,
+United States of America,US,2018,AMR,296
+United States of America,US,2019,AMR,253
+United States of America,US,2020,AMR,161
+United States of America,US,2021,AMR,172
+United States of America,US,2022,AMR,259
+Uruguay,UY,2018,AMR,73
+Uruguay,UY,2019,AMR,111
+Uruguay,UY,2020,AMR,75
+Uruguay,UY,2021,AMR,109
+Uruguay,UY,2022,AMR,120
+Venezuela (Bolivarian Republic of),VE,2018,AMR,1840
+Venezuela (Bolivarian Republic of),VE,2019,AMR,1659
+Venezuela (Bolivarian Republic of),VE,2020,AMR,1802
+Venezuela (Bolivarian Republic of),VE,2021,AMR,1548
+Venezuela (Bolivarian Republic of),VE,2022,AMR,1196

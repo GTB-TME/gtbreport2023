@@ -1,0 +1,1325 @@
+---
+title: "Chapter 5.1"
+author: "Takuya Yamanaka" 
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+      out_dir <- "./local";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir))})
+output: 
+  html_fragment:
+    # Do not include a table of contents
+    toc: no
+    # Set standard figure width to 12 inches
+    fig_width: 12
+    # Do not write figure captions
+    fig_caption: FALSE
+    # to save intermediate .png
+    keep_md: true
+    # Don't embed external resources (stylesheets, JS libraries) in the output 
+    self_contained: FALSE
+
+---
+
+```{r setup, include=FALSE}
+
+# Set chunk options.
+# Results "asis" is needed to avoid xtable output being html encoded
+# Suppress messages, warnings and also the ## at the beginning of printed text
+# Set a default figure width too.
+
+knitr::opts_chunk$set(echo = FALSE,
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.width = 12)
+
+# Load output packages ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+library(scales)
+library(RColorBrewer)
+library(whomap)
+library(gtbreport)
+library(here)
+
+library(jsonlite)
+library(dplyr)
+library(here)
+
+# Load R functions ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+source(here("report/functions/html_links.R"))
+source(here("report/functions/output_ggplot.R"))
+
+# Get the data sets and computed values/statistics for section 5.1 ----
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+source(here('report/ch5-1_prepare_data.r'))
+
+# Show static chart in addition to Kendo chart?
+show_static = F
+
+# Save underlying data files as CSV and charts as PDF files?
+pdf_csv_folder = here::here("report/local/figures/ch5.1")
+save_csv = TRUE
+save_pdf = TRUE
+
+# Create the output folder (only if it doesn't yet exist)
+dir.create(pdf_csv_folder, showWarnings = FALSE, recursive = TRUE)
+
+```
+
+```{r setup2, include=FALSE}
+# Chapter 1
+# Set options, load data, utility functions
+knitr::opts_chunk$set(echo = FALSE,
+                      results = "asis",
+                      message = FALSE,
+                      warning = FALSE)
+
+```
+
+```{r css_js}
+# Add standard stylesheets and javascript to support kendo
+cat(writeLines(readLines(here("report/resources/headers.htm"))))
+```
+
+# 5.1 Universal Health Coverage and TB  
+
+<span class="red">**Draft! Prepared `r Sys.Date()` using country-reported data snapshot files from `r format(as.Date(snapshot_date), format="%d %B %Y")`!**</span>
+
+
+Universal health coverage (UHC) means that everyone can obtain the health services they need without suffering financial hardship (`r ref_lnk("1")`). Target 3.8 of the United Nations (UN) Sustainable Development Goals (SDGs) is to achieve UHC by 2030 (`r ref_lnk("2")`). The milestones and targets for reductions in TB incidence and TB mortality set in the World Health Organization (WHO) End TB Strategy can only be achieved if everyone who develops TB disease can access high-quality treatment. 
+
+The SDGs include two UHC indicators: (i) a health service coverage index (SCI); and (ii) the proportion of the population with large household expenditures on health as a share of total household income or expenditure.
+
+Estimates of the SCI at global, regional and country levels are currently available for 2000&#8211;`r report_year-2` (`r ref_lnk("1,3")`). Worldwide, there were steady improvements in the SCI between 2000 and 2019, from a score of `r ftb(f5.1.1a_txt$sci_2000)` (out of 100) in 2000 to `r ftb(f5.1.1a_txt$sci_2019)` in 2019 (`r lnk("Fig. 5.1.1a")`). Most of this progress occurred between 2000 and 2015 and was primarily due to improvements in service coverage for infectious diseases (with only limited changes for other areas of service provision). At regional level, the SCI increased in all six WHO regions between 2000 and 2019; the biggest gains were in the South-East Asia and Western Pacific regions. There were also increases in all four World Bank income groups (`r lnk("Fig. 5.1.1b")`). In 2020 and 2021, during the COVID-19 pandemic, progress stalled globally (at a value of `r ftb(f5.1.1a_txt$sci_2021)` in 2021) and in most WHO regions and World Bank income groups. In `r report_year-2`, the WHO regions with the highest values were the European Region (`r ftb(f5.1.1a_txt$euro)`) and the Region of the Americas (`r ftb(f5.1.1a_txt$amro)`); the African Region had the lowest value (`r ftb(f5.1.1a_txt$afro)`). 
+
+### `r anch("Fig. 5.1.1")`<span style="color:#F21905">Fig. 5.1.1</span> Trends in the UHC service coverage index in WHO regions and World Bank income groups, 2000&#8211;`r report_year-2`
+
+#### (a) By WHO region
+```{r fig_5.1.1a, fig.alt="Trends in the UHC service coverage index by WHO region"}
+
+f5.1.1a_plot <- 
+  f5.1.1a_data %>%
+  ggplot(aes(x=year,y=SCI,group=who_reg,col=who_reg,size=who_reg)) + 
+  geom_line() + geom_point(size=2) +
+  scale_colour_manual(values=palatte_fig5.1.1a) +
+  scale_size_manual(values=c(0.7,0.7,0.7,0.7,0.7,0.7,1.4)) +
+  theme_gtb() +
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        axis.line.y.left = element_line(size = 0.5),
+        axis.ticks.y.left = element_line(),
+        axis.line.x = element_line(size = 0.5)) +
+  ylim(0,85) + xlab("") +
+  ylab("UHC service coverage index") +
+  geom_text_repel(
+    data = f5.1.1a_data %>% filter(year==max(year)),
+    aes(label = who_reg, segment.color=palatte_fig5.1.1a),
+    colour = 'black', 
+    segment.alpha = 0.5, 
+    segment.linetype =3,
+    size = 3, 
+    box.padding = 0.5,
+    nudge_x = 2, direction = "y", hjust = "left") + 
+  expand_limits(x=2025) +
+  scale_x_continuous(breaks = c(2000,2005,2010,2015,2020))
+
+output_ggplot(f5.1.1a_plot, f5.1.1a_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div id="fig_5_1_1a"></div>
+
+#### (b) By World Bank income group
+```{r fig_5.1.1b, fig.alt="Trends in the UHC service coverage index by WB income group"}
+
+f5.1.1b_plot <- 
+  f5.1.1b_data %>%
+  ggplot(aes(x=year,y=SCI,group=income_group,col=income_group,size=income_group)) + 
+  geom_line() + geom_point(size=2) +
+  scale_colour_manual(values=palatte_fig5.1.1b) +
+  scale_size_manual(values=c(0.7,0.7,0.7,0.7,1.4)) +
+  theme_gtb() +
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        axis.line.y.left = element_line(size = 0.5),
+        axis.ticks.y.left = element_line(),
+        axis.line.x = element_line(size = 0.5)) +
+  ylim(0,85) + xlab("") +
+  ylab("UHC service coverage index") +
+  geom_text_repel(
+    data = f5.1.1b_data %>% filter(year==max(year)),
+    aes(label = income_group, segment.color=palatte_fig5.1.1b),
+    colour = 'black', 
+    segment.alpha = 0.5, 
+    segment.linetype =3,
+    size = 3, 
+    box.padding = 0.5,
+    nudge_x = 2, direction = "y", hjust = "left") + 
+  expand_limits(x=2025) +
+  scale_x_continuous(breaks = c(2000,2005,2010,2015,2020))
+
+output_ggplot(f5.1.1b_plot, f5.1.1b_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_5_1_1b"></div>
+<div class="footnote">Source: Global Health Observatory (https://www.who.int/data/gho)</div>
+
+<hr />
+<br />
+
+Among the 30 high TB burden countries, most made progress between 2000 and 2019 (`r lnk("Fig. 5.1.2")`). The largest gains in absolute terms (+30 index point or more) were in `r sub("Democratic", "the Democratic", knitr::combine_words(f5.1.2_txt_list$country, oxford_comma=FALSE))`. During the COVID-19 pandemic, progress stalled or reversed in most countries. In 2021, the countries with the highest SCI values (around 80) were `r sub("Democratic", "the Democratic", knitr::combine_words(f5.1.2_txt_list_hi$country, oxford_comma=FALSE))`; most other countries had values between around 40 and 60.  
+
+### `r anch("Fig. 5.1.2")`<span style="color:#F21905">Fig. 5.1.2</span> Trends in the UHC service coverage index in the 30 high TB burden countries, 2000&#8211;`r report_year-2`
+```{r fig_5.1.2,fig.alt="Trends in the UHC service coverage index, 30HBC",fig.height=18}
+
+f5.1.2_plot <-
+  ggplot(na.omit(f5.1.2_data), aes(x=year, y=value_381)) +
+  geom_line(size=1, colour= "#3B53A4") + geom_point(size=2, colour= "#3B53A4") +
+  scale_x_continuous(name="Year", breaks = c(2000,2005,2010,2015,2020), limits=c(2000,2021)) +
+  ylab("UHC service coverage index") +
+  expand_limits(y=c(0,85)) + 
+  facet_wrap( ~ country, ncol = 3, scales="free_y") +
+  theme_gtb() +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf, colour = "#BCBCBC")
+
+output_ggplot(f5.1.2_plot, f5.1.2_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_AGO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_BGD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_BRA"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_CAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_CHN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_COG"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_PRK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_COD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_ETH"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_GAB"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_IND"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_IDN"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_KEN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_LSO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_LBR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_MNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_MOZ"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_MMR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_NAM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_NGA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_PAK"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_PNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_PHL"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_SLE"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_ZAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_THA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_UGA"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_2_TZA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_VNM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_2_ZMB"></div>
+</div>
+</div>
+
+<div class="footnote">Source: Global Health Observatory (https://www.who.int/data/gho)</div>
+
+<hr />
+<br />
+
+Across all countries, there was a great deal of variation in the SCI in `r report_year-2` (`r lnk("Fig. 5.1.3")`). The highest values were in high-income countries in North America, western Europe and parts of the Western Pacific Region; the lowest values were predominantly in countries in the WHO African Region.
+
+### `r anch("Fig. 5.1.3")`<span style="color:#F21905">Fig. 5.1.3</span> UHC service coverage index by country, 2021
+
+```{r fig_5.1.3, fig.alt="Map of UHC service coverage index"}
+
+f5.1.3_plot <-  whomap(f5.1.3_data,
+         colours = palatte_fig5.1.3,
+         legend.title = "Index", 
+         na.col = "white",water.col = "white",
+         legend.pos = c(0.14,0.40))
+
+output_ggplot(f5.1.3_plot, f5.1.3_data, show_static = T, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div class="footnote">Source: Global Health Observatory (https://www.who.int/data/gho)</div>
+
+<hr />
+<br />
+
+In contrast to improvements in the SCI, the global level of financial protection for health expenditures worsened between 2010 and 2019 (estimates for later years are not currently available). Worldwide, the proportion of the general population facing catastrophic expenditure on health (using a threshold of >10% annual household income or expenditure) rose from 11.4% (794 million people) in 2010 to 13.5% (1.04 billion people) in 2019 (`r ref_lnk("1, 3")`). At regional level, higher proportions in 2019 compared with 2010 were estimated for all WHO regions except the Region of the Americas (`r lnk("Fig. 5.1.4")`) (`r ref_lnk("3")`).
+
+### `r anch("Fig. 5.1.4")`<span style="color:#F21905">Fig. 5.1.4</span> Trends in the percentage of the general population facing catastrophic health expenditure^a^, globally and for WHO regions, 2000&#8211;2019
+```{r fig_5.1.4, fig.alt="Trends in the CHE by WHO region"}
+
+f5.1.4_plot <- 
+  f5.1.4_data %>%
+  ggplot(aes(x=year,y=value,group=who_reg,col=who_reg,size=who_reg)) + 
+  geom_line() + geom_point(size=2) +
+  scale_colour_manual(values=palatte_fig5.1.1a) +
+  scale_size_manual(values=c(0.7,0.7,0.7,0.7,0.7,0.7,1.4)) +
+  theme_gtb() +
+  theme(legend.position = "none",
+        panel.grid.major.y = element_blank(),
+        axis.line.y.left = element_line(size = 0.5),
+        axis.ticks.y.left = element_line(),
+        axis.line.x = element_line(size = 0.5)) +
+  ylim(0,20) + xlab("") +
+  ylab("Percentage") +
+  geom_text_repel(
+    data = f5.1.4_data %>% filter(year==max(year)),
+    aes(label = who_reg, segment.color=palatte_fig5.1.1a),
+    colour = 'black', 
+    segment.alpha = 0.5, 
+    segment.linetype =3,
+    size = 3, 
+    box.padding = 0.5,
+    nudge_x = 2, direction = "y", hjust = "left") + 
+  scale_x_continuous(breaks = c(2000,2005,2010,2015,2019))
+
+output_ggplot(f5.1.4_plot, f5.1.4_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div id="fig_5_1_4"></div>
+<div class="footnote">^a^ Defined as &#8805;10% of total household consumption or income.   <BR>Source: Global Health Observatory (https://www.who.int/data/gho)</div>
+
+<hr />
+<br />
+
+National values are available for different years and there is more geographical variability compared with the SCI, including within regions (`r lnk("Fig. 5.1.5")`). Of the 30 high TB burden countries, `r as.character(f5.1.5_txt)` had particularly high levels of catastrophic health expenditure (&#8805;15%): `r sub("Democratic", "the Democratic", knitr::combine_words(f5.1.5_txt_list$country, oxford_comma=FALSE))`.
+
+### `r anch("Fig. 5.1.5")`<span style="color:#F21905">Fig. 5.1.5</span> Percentage of the general population facing catastrophic health expenditure^a^ at country level, latest available year of data^b^
+
+```{r fig_5.1.5, fig.alt="Map of Percentage of the general population facing catastrophic health expenditure"}
+
+f5.1.5_plot <- whomap(f5.1.5_data,
+         colours = palatte_fig5.1.5,
+         legend.title = "Percentage",
+         na.col = "white",water.col = "white",
+         legend.pos = c(0.14,0.40))
+
+output_ggplot(f5.1.5_plot, f5.1.5_data, show_static = TRUE, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="footnote">^a^ Defined as &#8805;10% of total household consumption or income.<BR>^b^ The latest available year ranges from 1995 to 2021.<BR>Source: Global Health Observatory (https://www.who.int/data/gho)</div>
+
+<hr />
+<br />
+
+The distribution of the two UHC indicators in the 30 high TB burden countries shows that, in general, values improve with income level; this is especially evident for the SCI (`r lnk("Fig. 5.1.6")`). Nonetheless, as also illustrated in `r lnk("Fig. 5.1.5")`, the risk of catastrophic health expenditure is high (15% or above) in several middle-income countries, including Angola, Bangladesh, China, India, and Nigeria. Thailand stands out as a high TB burden country with both a high SCI (80 or above) and a high level of financial protection (2% of households facing catastrophic health expenditure). A UHC scheme was established in 2002, supported by domestic funding and a strong primary health care system (`r ref_lnk("4")`).  
+
+### `r anch("Fig. 5.1.6")` <span style="color:#F21905">Fig. 5.1.6</span> UHC service coverage index (SDG 3.8.1)^a^ and percentage of the general population facing catastrophic health expenditure (SDG 3.8.2),^b^ 30 high TB burden countries,^c^ stratified by income group^d^
+
+```{r fig_5.1.6, fig.height=9}
+
+
+f5.1.6_plot <- f5.1.6_data %>% 
+  filter(!is.na(year)) %>%
+  ggplot() +
+  geom_point(aes(x=uhc_index,y=uhc_ce10,col=g_income), size=2) +
+  facet_wrap(~g_income,ncol=1, scales="free",
+             labeller = labeller(g_income=label_income)) +
+  theme(strip.text = element_text(angle = 0, hjust = 0.001)) +
+  theme_gtb() +
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+  geom_text_repel(aes(x=uhc_index,y=uhc_ce10,label = country,col=g_income), 
+                  col='black',size=3,segment.alpha = 0.4, max.overlaps = Inf,
+                  min.segment.length = 0,
+                  point.padding = 1, box.padding = 0.5,force_pull=0.1,
+                  max.time = 10, max.iter=1000000) +
+  xlim(c(20,85)) +
+  expand_limits(y=c(-5,38)) +   xlab("UHC service coverage index (SDG 3.8.1)") + 
+  ylab("Percentage of the general population facing catastrophic health expenditure (SDG 3.8.2)")+
+  scale_color_brewer(palette="Set1") +
+  theme(legend.position = "none")
+
+output_ggplot(f5.1.6_plot, f5.1.6_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div id="fig_5_1_6_LIC"></div>
+<div id="fig_5_1_6_LMIC"></div>
+<div id="fig_5_1_6_UMIC"></div>
+<div class="footnote">^a^ The SCI can take values from 0 (worst) to 100 (best) and is calculated using 16 tracer indicators, one of which is the coverage of TB treatment. Values shown for the SCI are estimates for the latest year for which data for SDG 3.8.2 are available. Values are based on interpolated points between available years over the 2000&#8211;2021 period.<br />
+^b^ Defined as ≥10% of total household consumption or income. The latest available year ranges from 2007 to 2021 for the 30 high TB burden countries.<br />
+^c^ Data were not available for Democratic People's Republic of Korea and Papua New Guinea.<br />
+^d^ The classification is for the latest year for which data for SDG 3.8.2 are available.<br />
+Source: Global Health Observatory (https://www.who.int/data/gho)</div>
+
+<hr />
+<br />
+
+To achieve UHC, substantial increases in investment in health care are critical. From 2000 to `r report_year-3`, there were striking increases in health expenditure (from all sources) per capita in a small number of high TB burden countries, notably the upper-middle-income countries of Brazil, China, South Africa and Thailand (`r lnk("Fig. 5.1.7")`). A steady upward trend was evident in Bangladesh, Ethiopia, India, Indonesia, Lesotho, Mongolia, Mozambique, the Philippines and Viet Nam, and there was a noticeable rise from 2012 to 2017 in Myanmar. Elsewhere, however, levels of spending have been relatively stable, and at generally much lower levels.
+
+### `r anch("Fig. 5.1.7")`<span style="color:#F21905">Fig. 5.1.7</span> Current health expenditure per capita, 30 high TB burden countries, 2000&#8211;2020, stratified by income group^a^  
+#### (a) Low-income countries
+
+```{r fig_5.1.7a,fig.alt="Panel plot Current health expenditure per capita, 30 high TB burden countries, 2000&#8211;2021",fig.height=7.5}
+
+f5.1.7a_plot <- f5.1.7_data %>%
+  add_row(filter(dummydf,iso3=="PRK")) %>% # to add dummy date for all 30 HBCs to avoid missing panel
+  filter(g_income=='LIC') %>% 
+  ggplot(aes(x=year, y=value)) +
+  geom_line(size=1, colour= "#3B53A4") +
+  scale_x_continuous(name="Year", breaks = c(2000, 2010, 2020), limits=c(2000,2020)) +
+  scale_y_continuous(name = "International $") +
+  expand_limits(y=c(0,550)) + 
+  facet_wrap( ~ country, scales="free_y",ncol = 4,labeller = label_wrap_gen(width = 20)) +
+  theme_gtb() +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf, colour = "#BCBCBC")
+
+output_ggplot(f5.1.7a_plot, f5.1.7_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_CAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_PRK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_COD"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_ETH"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_LBR"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_MOZ"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_SLE"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_UGA"></div>
+</div>
+</div>
+
+  
+#### (b) Lower-middle-income countries   
+```{r fig_5.1.7b, fig.height=8 ,fig.alt="Panel plot Current health expenditure per capita, 30 high TB burden countries, 2000&#8211;2021",fig.height=12}
+
+f5.1.7b_plot <- f5.1.7_data %>%
+  # add_row(dummydf) %>% # to add dummy date for all 30 HBCs to avoid missing panel 
+  filter(g_income=='LMC') %>% 
+  ggplot(aes(x=year, y=value)) +
+  geom_line(size=1, colour= "#3B53A4") +
+  scale_x_continuous(name="Year", breaks = c(2000, 2010, 2020), limits=c(2000,2020)) +
+  scale_y_continuous(name = "International $") +
+  expand_limits(y=c(0,550)) + 
+  facet_wrap( ~ country, scales="free_y",ncol = 4,labeller = label_wrap_gen(width = 20)) +
+  theme_gtb() +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf, colour = "#BCBCBC")
+
+output_ggplot(f5.1.7b_plot, f5.1.7_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_AGO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_BGD"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_COG"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_IND"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_IDN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_KEN"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_LSO"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_MNG"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_MMR"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_NGA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_PAK"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_PNG"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_PHL"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_TZA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_VNM"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_ZMB"></div>
+</div>
+<div class="col-md-4">
+</div>
+<div class="col-md-4">
+</div>
+</div>
+
+
+#### (c) Upper-middle-income countries    
+```{r fig_5.1.7c,fig.alt="Panel plot Current health expenditure per capita, 30 high TB burden countries, 2000&#8211;2021",fig.height=5}
+
+f5.1.7c_plot <- f5.1.7_data %>%
+  # add_row(dummydf) %>% # to add dummy date for all 30 HBCs to avoid missing panel 
+  filter(g_income=='UMC') %>% 
+  ggplot(aes(x=year, y=value)) +
+  geom_line(size=1, colour= "#3B53A4") +
+  scale_x_continuous(name="Year", breaks = c(2000, 2010, 2020), limits=c(2000,2020)) +
+  scale_y_continuous(name = "International $") +
+  expand_limits(y=c(0,1500)) + 
+  facet_wrap( ~ country, scales="free_y",ncol = 4,labeller = label_wrap_gen(width = 20)) +
+  theme_gtb() +
+  annotate("segment", x=-Inf, xend=Inf, y=-Inf, yend=-Inf, colour = "#BCBCBC")
+
+output_ggplot(f5.1.7c_plot, f5.1.7_data, show_static, pdf_csv_folder, save_csv, save_pdf)
+
+```
+
+
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_BRA"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_CHN"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_GAB"></div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-4">
+<div id="fig_5_1_7_NAM"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_ZAF"></div>
+</div>
+<div class="col-md-4">
+<div id="fig_5_1_7_THA"></div>
+</div>
+</div>
+
+
+<div class="footnote">^a^ The classification is for 2020. Data were not available for the Democratic People's Republic of Korea.<br />
+Sources: WHO Global Health Expenditure Database (http://apps.who.int/nha/database/)</div>
+
+`r anch("refs")`
+
+<hr style="border:1px solid gray20">
+
+**References**
+
+1. World Health Organization/World Bank.  Tracking Universal Health Coverage: 2023 Global monitoring report. Geneva: World Health Organization; 2023 (https://www.who.int/publications/i/item/9789240080379).
+  
+2. Sustainable development goals: Goal 3 targets and indicators [website]. New York: United Nations (https://sdgs.un.org/goals/goal3#targets_and_indicators).
+  
+3. Global Health Observatory (https://www.who.int/data/gho).
+
+4. Tangcharoensathien V, Witthayapipopsakul W, Panichkriangkrai W, Patcharanarumol W, Mills A. Health systems development in Thailand: a solid platform for successful implementation of universal health coverage. Lancet. 2018;391(10126):1205&#8211;23 (https://pubmed.ncbi.nlm.nih.gov/29397200/).
+
+
+
+```{r js_functions}
+# Insert javascript file containing common Kendo number formatting functions ----
+cat(writeLines(readLines(here("report/resources/gtbr_js.htm"))))
+```
+
+<script type="text/javascript">
+/* JSON data objects for the figures */
+
+var fig_5_1_1a_data = `r f5.1.1a_data %>% pivot_wider(names_from = who_reg, values_from = SCI) %>% rename(afro=2, amro=3, emro=4, euro=5, searo=6, wpro=7) %>% arrange(year) %>% toJSON("rows")`   ;
+
+var fig_5_1_1b_data = `r f5.1.1b_data %>% pivot_wider(names_from = income_group, values_from = SCI) %>% rename(hic=2, umic=3, lmic=4, lic=5) %>% arrange(year) %>% toJSON("rows")`   ;
+
+var fig_5_1_2_data = `r f5.1.2_data  %>% toJSON("rows")` ;  
+
+var fig_5_1_4_data = `r f5.1.4_data %>% select(-iso3) %>% arrange(who_reg) %>% pivot_wider(names_from = who_reg, values_from = value) %>% rename(afro=2, amro=3, emro=4, euro=5, searo=6, wpro=7) %>% arrange(year) %>% toJSON("rows")`   ;
+
+var fig_5_1_6_data = `r f5.1.6_data %>% mutate(size=5, year=as.character(year)) %>% toJSON("rows")`   ;
+
+var fig_5_1_7_data = `r f5.1.7_data %>% select (year,country,value) %>% add_row(country = "Democratic People's Republic of Korea", year = rep(2000:2019, 1), value = NA) %>% toJSON("rows")`   ;
+
+</script>
+
+  
+```{js, echo=FALSE}
+
+function createFig_5_1_1a(fig_ID, data) {
+   	
+  // Filter the dataset on the country variable
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 500
+			},
+			legend: {
+				position: "top"
+			},
+      series: [{
+				type: "line",
+				field: "afro",
+        name: "African region",
+				color: "#6363c0",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "African region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "amro",
+        name: "Region of the Americas",
+				color: "#f26829",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Region of the Americas (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "searo",
+        name: "South-East Asia Region",
+				color: "#40bf73",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "South-East Asia Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "euro",
+        name: "European Region",
+				color: "#008dc9",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "European Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "emro",
+        name: "Eastern Mediterranean Region",
+				color: "#bd53bd",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Eastern Mediterranean Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "wpro",
+        name: "Western Pacific Region",
+				color: "#f4a81d",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Western Pacific Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "GLOBAL",
+        name: "Global",
+				color: "navy",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Global (#= category #): #= value.toPrecision(2) #"
+				}
+			},],
+			valueAxis: {
+				labels: {
+          template: "#= kendo.toString(value, 'n0') #"
+				},
+				title: {
+					text: "UHC service coverage index"
+				},
+				line: {
+					visible: false
+				}
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: 0,
+          step: 1
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+				}
+			}
+
+		});
+}
+
+function createFig_5_1_1b(fig_ID, data) {
+   	
+  // Filter the dataset on the country variable
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 500
+			},
+			legend: {
+				position: "top"
+			},
+      series: [{
+				type: "line",
+				field: "hic",
+				name: "High-income",
+				color: "#66D6FF",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "High-income countries (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "umic",
+				name: "Upper-middle-income",
+				color: "#E63E13",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Upper-middle-income countries (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "lmic",
+				name: "Lower-middle-income",
+				color: "#8FD314",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Lower-middle-income countries (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "lic",
+				name: "Low-income",
+				color: "#814550",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Low-income countries (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "GLOBAL",
+        name: "Global",
+				color: "#124CFC",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Global (#= category #): #= value.toPrecision(2) #"
+				}
+			},],
+			valueAxis: {
+				labels: {
+          template: "#= kendo.toString(value, 'n0') #"
+				},
+				title: {
+					text: "UHC service coverage index"
+				},
+				line: {
+					visible: false
+				}
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: 0,
+          step: 1
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+				}
+			}
+
+		});
+}
+
+function createFig_5_1_2(fig_ID, data, filter, x_axis_title = True, y_axis_title = True, height) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.country == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: height
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+				field: "value_381",
+				color: "navy", 
+        markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				format: "{0:0.00}",
+				template: "#= category #: #= value.toPrecision(2) #",
+			}
+			}],
+			valueAxis: {
+				labels: {
+					format: "{0}"
+				},
+				title: {
+					text: "UHC service coverage index",
+					visible: y_axis_title,
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        max: 100,
+        min: 0
+			},
+			categoryAxis: {
+				field: "year",
+        labels: {
+					rotation: 0,
+          step: 5
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+					visible: x_axis_title
+				}
+			}
+
+		});
+}
+
+function createFig_5_1_4(fig_ID, data) {
+   	
+  // Filter the dataset on the country variable
+   
+		$(fig_ID).kendoChart({
+			dataSource: data,
+			chartArea: {
+				height: 500
+			},
+			legend: {
+				position: "top"
+			},
+      series: [{
+				type: "line",
+				field: "afro",
+        name: "African region",
+				color: "#6363c0",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "African region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "amro",
+        name: "Region of the Americas",
+				color: "#f26829",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Region of the Americas (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "searo",
+        name: "South-East Asia Region",
+				color: "#40bf73",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "South-East Asia Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "euro",
+        name: "European Region",
+				color: "#008dc9",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "European Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "emro",
+        name: "Eastern Mediterranean Region",
+				color: "#bd53bd",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Eastern Mediterranean Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "wpro",
+        name: "Western Pacific Region",
+				color: "#f4a81d",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Western Pacific Region (#= category #): #= value.toPrecision(2) #"
+				}
+			},{
+				type: "line",
+				field: "GLOBAL",
+        name: "Global",
+				color: "navy",
+        markers: {
+          size: 3
+        },
+				tooltip: {
+					visible: true,
+					format: "{0}",
+					template: "Global (#= category #): #= value.toPrecision(2) #"
+				}
+			},],
+			valueAxis: {
+				labels: {
+          template: "#= kendo.toString(value, 'n0') #"
+				},
+				title: {
+					text: "Percentage"
+				},
+				line: {
+					visible: false
+				}
+			},
+			categoryAxis: {
+				field: "year",
+				labels: {
+					rotation: 0,
+          step: 1
+				},
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+				}
+			}
+
+		});
+}
+
+
+function createFig_5_1_6(fig_ID, data, filter,title, x_axis_title_text, y_axis_title_text, color) {
+  // Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.g_income == filter);
+   
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: 350
+			},     
+      title: {
+				text: title,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},		
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "bubble"
+			},
+			series: [{
+				xField: "uhc_index",
+        yField: "uhc_ce10",
+        sizeField: "size",
+        maxSize: 10,
+        minSize: 0.1,
+        categoryField: "country",
+				color: color
+			}],
+      xAxis: {
+        labels: {
+          format: "{0:N0}",
+          skip: 1,
+          rotation: "auto"
+                    },
+        title: {
+					text: x_axis_title_text
+				},
+        max:85,
+        min:20
+                },
+      yAxis: {
+        labels: {
+          format: "{0:N0}",
+               },
+        title: {
+					text: y_axis_title_text
+				},
+        max:40,
+        min:-0,
+        majorUnit: 10,
+        },
+      tooltip: {
+				visible: true,
+				template: "#= category # (#= kendo.toString(dataItem.year, 'n0') #): #= value.x.toPrecision(2) # (SDG 3.8.1), #= value.y.toPrecision(2) # (SDG 3.8.2)"
+			}
+
+		});
+}
+
+function createFig_5_1_7(fig_ID, data, filter, x_axis_title = True, y_axis_title = True,max) {
+  
+  		// Filter the dataset on the country variable
+		dataJSON = data.filter( element => element.country == filter);
+  
+		$(fig_ID).kendoChart({
+			dataSource: dataJSON,
+			chartArea: {
+				height: 250
+			},	
+      title: {
+				text: filter,
+				color: "black",
+				font: "bold 14px  Arial,Helvetica,sans-serif",
+        align: "center"
+			},	
+			legend: {
+				position: "bottom"
+			},
+			seriesDefaults: {
+				type: "line"
+			},
+			series: [{
+				field: "value",
+				color: "#3B53A4", 
+        markers: {
+          size: 3
+        },
+        tooltip: {
+				visible: true,
+				format: "{0:0.00}",
+				template: "#= category #: #= num_spacer(value) #",
+			}
+			}],
+			valueAxis: {
+				labels: {
+					template: "#= axis_spacer(value) #"
+				},
+				title: {
+					text: "International US$",
+					visible: y_axis_title,
+          font: "14px Arial,Helvetica,sans-serif"
+				},
+				line: {
+					visible: false
+				},
+        max: max,
+        min: 0
+			},
+			categoryAxis: {
+				field: "year",
+        labels: {
+					rotation: 0,
+          step: 5
+          },
+				majorGridLines: {
+					visible: false
+				},
+				title: {
+					text: "Year",
+					visible: x_axis_title
+				}
+			}
+
+		});
+}
+
+```
+
+```{js, echo=FALSE}
+
+
+/* Create the figures after the document has been loaded */
+$(document).ready(function () {
+  createFig_5_1_1a("#fig_5_1_1a",fig_5_1_1a_data);
+  createFig_5_1_1b("#fig_5_1_1b",fig_5_1_1b_data); 
+  createFig_5_1_6("#fig_5_1_6_LIC",fig_5_1_6_data,"Low income","Low-income countries","UHC service coverage index (SDG 3.8.1)","Percentage of the general population\nfacing catastrophic health expenditure\n(SDG 3.8.2)","#814550");
+  createFig_5_1_6("#fig_5_1_6_LMIC",fig_5_1_6_data,"Lower-middle income","Lower-middle-income countries","UHC service coverage index (SDG 3.8.1)","Percentage of the general population\nfacing catastrophic health expenditure\n(SDG 3.8.2)","#8FD314");
+  createFig_5_1_6("#fig_5_1_6_UMIC",fig_5_1_6_data,"Upper-middle income","Upper-middle-income countries","UHC service coverage index (SDG 3.8.1)","Percentage of the general population\nfacing catastrophic health expenditure\n(SDG 3.8.2)","#E63E13");
+  createFig_5_1_7("#fig_5_1_7_AGO",fig_5_1_7_data,"Angola",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_COG",fig_5_1_7_data,"Congo",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_IND",fig_5_1_7_data,"India",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_MNG",fig_5_1_7_data,"Mongolia",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_PAK",fig_5_1_7_data,"Pakistan",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_THA",fig_5_1_7_data,"Thailand",true,true, 2500);
+                 createFig_5_1_7("#fig_5_1_7_BGD",fig_5_1_7_data,"Bangladesh",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_PRK",fig_5_1_7_data,"Democratic People's Republic of Korea",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_IDN",fig_5_1_7_data,"Indonesia",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_MOZ",fig_5_1_7_data,"Mozambique",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_PNG",fig_5_1_7_data,"Papua New Guinea",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_UGA",fig_5_1_7_data,"Uganda",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_BRA",fig_5_1_7_data,"Brazil",true,true, 2500);
+                 createFig_5_1_7("#fig_5_1_7_COD",fig_5_1_7_data,"Democratic Republic of the Congo",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_KEN",fig_5_1_7_data,"Kenya",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_MMR",fig_5_1_7_data,"Myanmar",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_PHL",fig_5_1_7_data,"Philippines",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_TZA",fig_5_1_7_data,"United Republic of Tanzania",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_CAF",fig_5_1_7_data,"Central African Republic",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_ETH",fig_5_1_7_data,"Ethiopia",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_LSO",fig_5_1_7_data,"Lesotho",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_NAM",fig_5_1_7_data,"Namibia",true,true,2500);
+                 createFig_5_1_7("#fig_5_1_7_SLE",fig_5_1_7_data,"Sierra Leone",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_VNM",fig_5_1_7_data,"Viet Nam",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_CHN",fig_5_1_7_data,"China",true,true, 2500);
+                 createFig_5_1_7("#fig_5_1_7_GAB",fig_5_1_7_data,"Gabon",true,true, 2500);
+                 createFig_5_1_7("#fig_5_1_7_LBR",fig_5_1_7_data,"Liberia",true,true,400);
+                 createFig_5_1_7("#fig_5_1_7_NGA",fig_5_1_7_data,"Nigeria",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_ZAF",fig_5_1_7_data,"South Africa",true,true, 2500);
+                 createFig_5_1_7("#fig_5_1_7_ZMB",fig_5_1_7_data,"Zambia",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_ZWE",fig_5_1_7_data,"Zimbabwe",true,true,700);
+                 createFig_5_1_7("#fig_5_1_7_RUS",fig_5_1_7_data,"Russian Federation",true,true,2500);
+                 createFig_5_1_7("#fig_5_1_7_KHM",fig_5_1_7_data,"Cambodia",true,true,700);
+
+                 createFig_5_1_2("#fig_5_1_2_AGO",fig_5_1_2_data,"Angola",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_COG",fig_5_1_2_data,"Congo",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_IND",fig_5_1_2_data,"India",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_MNG",fig_5_1_2_data,"Mongolia",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_PAK",fig_5_1_2_data,"Pakistan",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_THA",fig_5_1_2_data,"Thailand",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_BGD",fig_5_1_2_data,"Bangladesh",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_PRK",fig_5_1_2_data,"Democratic People's Republic of Korea",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_IDN",fig_5_1_2_data,"Indonesia",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_MOZ",fig_5_1_2_data,"Mozambique",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_PNG",fig_5_1_2_data,"Papua New Guinea",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_UGA",fig_5_1_2_data,"Uganda",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_BRA",fig_5_1_2_data,"Brazil",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_COD",fig_5_1_2_data,"Democratic Republic of the Congo",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_KEN",fig_5_1_2_data,"Kenya",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_MMR",fig_5_1_2_data,"Myanmar",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_PHL",fig_5_1_2_data,"Philippines",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_TZA",fig_5_1_2_data,"United Republic of Tanzania",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_CAF",fig_5_1_2_data,"Central African Republic",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_ETH",fig_5_1_2_data,"Ethiopia",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_LSO",fig_5_1_2_data,"Lesotho",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_NAM",fig_5_1_2_data,"Namibia",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_SLE",fig_5_1_2_data,"Sierra Leone",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_VNM",fig_5_1_2_data,"Viet Nam",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_CHN",fig_5_1_2_data,"China",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_GAB",fig_5_1_2_data,"Gabon",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_LBR",fig_5_1_2_data,"Liberia",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_NGA",fig_5_1_2_data,"Nigeria",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_ZAF",fig_5_1_2_data,"South Africa",true,true,250);
+                 createFig_5_1_2("#fig_5_1_2_ZMB",fig_5_1_2_data,"Zambia",true,true,250);
+                 
+                 createFig_5_1_4("#fig_5_1_4",fig_5_1_4_data);
+
+ });  
+
+```
